@@ -16,8 +16,7 @@ main:
 	subl 	$0x4, %esp
 	ret
 	movl 	0x804c0ec, %eax
-	movl	$0x08048f15, -0x4(%esp)
-	subl	$0x4, %esp
+	push	$0x08048e6e
 	ret
 	movl	$1, %eax
 	popl	%ebp
