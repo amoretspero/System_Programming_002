@@ -12,7 +12,8 @@ main:
 	.cfi_def_cfa_register 5
 	movl	0x804c0ec, %eax
 	movl 	%eax, 0x804c0e4
-	subl	$0x4, %esp
+	push	$0x08048d4c
+	subl 	$0x4, %esp
 	ret
 	movl	$1, %eax
 	popl	%ebp
