@@ -15,6 +15,10 @@ main:
 	push	$0x08048d4c
 	subl 	$0x4, %esp
 	ret
+	movl 	0x804c0ec, %eax
+	movl	$0x08048f15, -0x4(%esp)
+	subl	$0x4, %esp
+	ret
 	movl	$1, %eax
 	popl	%ebp
 	.cfi_restore 5
