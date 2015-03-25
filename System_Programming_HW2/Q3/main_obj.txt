@@ -1,0 +1,15 @@
+
+main.o:     file format elf32-i386
+
+
+Disassembly of section .text:
+
+00000000 <main>:
+   0:	55                   	push   %ebp
+   1:	89 e5                	mov    %esp,%ebp
+   3:	83 e4 f0             	and    $0xfffffff0,%esp
+   6:	e8 fc ff ff ff       	call   7 <main+0x7>
+			7: R_386_PC32	swap
+   b:	b8 00 00 00 00       	mov    $0x0,%eax
+  10:	c9                   	leave  
+  11:	c3                   	ret    
