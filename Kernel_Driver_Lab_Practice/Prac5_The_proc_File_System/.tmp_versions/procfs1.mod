@@ -1,0 +1,2 @@
+/home/amoretspero/Documents/System_Programming_002/Kernel_Driver_Lab_Practice/Prac5_The_proc_File_System/procfs1.ko
+/home/amoretspero/Documents/System_Programming_002/Kernel_Driver_Lab_Practice/Prac5_The_proc_File_System/procfs1.o

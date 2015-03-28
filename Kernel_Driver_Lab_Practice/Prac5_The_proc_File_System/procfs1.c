@@ -6,6 +6,7 @@
 #include <linux/kernel.h>
 #include <linux/proc_fs.h>
 #include <linux/fs.h>
+#include <linux/uidgid.h>
 
 #define procfs_name "helloworld"
 
@@ -13,7 +14,28 @@
  * This structure hold information about the /proc file
  */
 
-struct proc_dir_entry;
+/*struct proc_dir_entry
+{
+    unsigned int low_ino;
+    umode_t mode;
+    nlink_t nlink;
+    kuid_t uid;
+    kgid_t git;
+    loff_t size;
+    const struct inode_operations* proc_iops;
+    const struct file_operations* proc_fops;
+    struct proc_dir_entry* next;
+    struct proc_dir_entry* parent;
+    struct proc_dir_entry* subdir;
+    void* data;
+    atomic_t count;
+    atomic_t in_use;
+    struct completion* pde_unload_completion;
+    struct list_head pde_openers;
+    spinlock_t pde_unload_lock;
+    u8 namelen;
+    char name[];
+};*/
 
 struct proc_dir_entry* Our_Proc_File;
 
@@ -97,6 +119,9 @@ int init_module()
 	 * So to compile this module in 3.13.x or higher version of linux kernel,
 	 * document's "create_proc_entry" should be alternated with "proc_create",
 	 * which requires one more parameter file_operations pointer.
+	 * (For more info, create_proc_entry and create_proc_read_entry has been removed in
+	 * 3.10 for first time. And proc_dir_entry(a.k.a. PDE) is opaque since version 3.10 too.)
+	 * (For details, go to https://lwn.net/Articles/549477)
 	 * That's why I declared that structure ahead of this part and used it here.
 	 */
 
@@ -113,12 +138,16 @@ int init_module()
 		return -ENOMEM;
 	}
 
-	Our_Proc_File->read_proc = procfile_read;
+	/*Our_Proc_File->read_proc = procfile_read;
 	Our_Proc_File->owner = THIS_MODULE;
 	Our_Proc_File->mode = S_IFREG | S_IRUGO;
 	Our_Proc_File->uid = 0;
 	Our_Proc_File->gid = 0;
-	Our_Proc_File->size = 37;
+	Our_Proc_File->size = 37;*/
+	kuid_t uid_custom = KUIDT_INIT(0);
+	kgid_t gid_custom = KGIDT_INIT(0);
+	proc_set_user(Our_Proc_File, uid_custom, gid_custom);
+	proc_set_size(Our_Proc_File, 37);
 
 	printk(KERN_INFO "/proc/%s created\n", procfs_name);
 	return 0;	/* Everything is OK. */
