@@ -9,7 +9,7 @@
 
 #include "chardev.h"
 #define SUCCESS 0
-#define DEVICE_NAME "char_dev"
+#define DEVICE_NAME "chardev"
 #define BUF_LEN 80
 
 /*
@@ -148,8 +148,15 @@ static ssize_t device_write(struct file* file, char __user* buffer, size_t lengt
  *
  */
 
-int device_ioctl(struct inode* inode, struct file* file, unsigned int ioctl_num, unsigned long ioctl_param)
+/*int*/long device_ioctl(/*struct inode* inode, */struct file* file, unsigned int ioctl_num, unsigned long ioctl_param)
 {
+    	/*
+	 * For Linux kernel version 2.6.39 and after ones, ioctl calls has changed into
+	 * unlocked_ioctl calls, because of the inefficiency of 'Big Kernel Lock' that is due to
+	 * traditional ioctl calls cause.
+	 * Plus, we don't have to pass the inode* parameter to ioctl functions, the return type
+	 * has changed into long.
+	 */
 	int i;
 	char* temp;
 	char ch;
@@ -207,11 +214,11 @@ int device_ioctl(struct inode* inode, struct file* file, unsigned int ioctl_num,
 
 struct file_operations Fops = 
 {
-	.read = device_read,
-	.write = device_write,
-	.ioctl = device_ioctl,
-	.open = device_open,
-	.release = device_release
+	read : device_read,
+	write : device_write,
+	unlocked_ioctl : device_ioctl,
+	open : device_open,
+	release : device_release
 };
 
 /*
