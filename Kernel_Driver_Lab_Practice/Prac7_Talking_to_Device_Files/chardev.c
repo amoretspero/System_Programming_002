@@ -5,12 +5,15 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/fs.h>
+#include <linux/slab.h>
 #include <asm/uaccess.h>
+#include <linux/sched.h>
 
 #include "chardev.h"
 #define SUCCESS 0
 #define DEVICE_NAME "chardev"
 #define BUF_LEN 80
+#define DEBUG
 
 /*
  * Is the device open right now? Used to prevent
@@ -30,6 +33,7 @@ static char Message[BUF_LEN];
  */
 
 static char* Message_Ptr;
+static char* call_tree_Ptr;
 
 /*
  * This is called whenever a process attempts to open the device file.
@@ -72,6 +76,69 @@ static int device_release (struct inode* inode, struct file* file)
 	return SUCCESS;
 }
 
+
+char* string_adder(char* str1, char* str2)
+{
+    int len1 = 0;
+    int len2 = 0;
+    while(str1[len1] != '\0')
+    {
+	len1++;
+    }
+    while(str2[len2] != '\0')
+    {
+	len2++;
+    }
+   /* printf("length of str1 : %d, length of str2 : %d\n", len1, len2);*/
+    int total_len = len1+len2;
+    int cnt;
+    char* res = kmalloc(sizeof(char)*(total_len+1), GFP_ATOMIC);
+    for(cnt = 0; cnt < len1; cnt++)
+    {
+	res[cnt] = str1[cnt];
+    }
+    for(cnt = 0; cnt < len2; cnt++)
+    {
+	res[cnt + len1] = str2[cnt];
+    }
+    res[total_len] = '\0';
+    return res;
+}
+char* int_to_str(int num)
+{
+    char* res = "";
+    while(num > 9)
+    {
+	int temp = num%10;
+	if (temp == 0) { res = string_adder(res, "0");}
+	else if (temp == 1) { res = string_adder(res, "1"); }
+	else if (temp == 2) { res = string_adder(res, "2"); }
+	else if (temp == 3) { res = string_adder(res, "3"); }
+	else if (temp == 4) { res = string_adder(res, "4"); }
+	else if (temp == 5) { res = string_adder(res, "5"); }
+	else if (temp == 6) { res = string_adder(res, "6"); }
+	else if (temp == 7) { res = string_adder(res, "7"); }
+	else if (temp == 8) { res = string_adder(res, "8"); }
+	else { res = string_adder(res, "9"); }
+	num = num/10;
+    }	
+    int temp = num;
+    	if (temp == 0) { res = string_adder(res, "0");}
+    	else if (temp == 1) { res = string_adder(res, "1"); }
+	else if (temp == 2) { res = string_adder(res, "2"); }
+	else if (temp == 3) { res = string_adder(res, "3"); }
+	else if (temp == 4) { res = string_adder(res, "4"); }
+	else if (temp == 5) { res = string_adder(res, "5"); }
+	else if (temp == 6) { res = string_adder(res, "6"); }
+	else if (temp == 7) { res = string_adder(res, "7"); }
+	else if (temp == 8) { res = string_adder(res, "8"); }
+	else { res = string_adder(res, "9"); }
+
+   	return res;
+}
+	
+
+
 /*
  * This function is called whenever a process which has already opened the
  * device file attempts to read from it.
@@ -98,19 +165,65 @@ static ssize_t device_read(struct file* file, char __user* buffer, size_t length
 	/*
 	 * Actually put the data into the buffer
 	 */
-	while(length & *Message_Ptr)
+	char* call_tree = "";
+#ifdef DEBUG
+	printk(KERN_INFO "Read %d bytes, %d left\n", bytes_read, length);
+	printk(KERN_INFO "Current PID : %d\n", current->pid);
+	printk(KERN_INFO "Parent PID : %d\n", current->real_parent->pid);
+#endif
+	struct task_struct* task = current;
+	int stopper = 0;
+	char* pathname;
+	char* p;
+	struct mm_struct* mm;
+	int prev_pid = current->pid;
+	do
+	{
+	    //printk(KERN_INFO "PID : %d\n", task->pid);
+	    //printk(KERN_INFO "real_parent : %p\n", task->real_parent);
+	    mm = task->mm;
+	    if(mm)
+	    {
+		down_read(&mm->mmap_sem);
+		if (mm->exe_file)
+		{
+		    pathname = kmalloc(PATH_MAX, GFP_ATOMIC);
+		    if (pathname)
+		    {
+			p = d_path(&mm->exe_file->f_path, pathname, PATH_MAX);
+		    }
+		    if (task == current)
+		    {
+			p = "caller";
+		    }
+		}
+		up_read(&mm->mmap_sem);
+	    }
+	    //printk(KERN_INFO "Process name : %s\n", p);
+	    call_tree = string_adder("\n", call_tree);
+	    call_tree = string_adder(")", call_tree);
+	    call_tree = string_adder(int_to_str(task->pid), call_tree);
+	    call_tree = string_adder("(", call_tree);
+	    call_tree = string_adder(" ", call_tree);
+	    call_tree = string_adder(p, call_tree);
+	    call_tree = string_adder("- ", call_tree);
+	    prev_pid = task->pid;
+	    task = task->real_parent;
+	    stopper++;
+	}while((prev_pid != 0) && (stopper < 20));
+
+	//printk(KERN_INFO "%s\n", call_tree);
+	call_tree_Ptr = call_tree;
+	while(length && *call_tree_Ptr)
 	{
 		/*
 		 * Because the buffer is in the user data segment, not the kernel data segment,
 		 * assignment wouldn't work.Instead, we have to use put_user which copies data from the kernel data segment to the user data segment.
 		 */
-		put_user(*(Message_Ptr++), buffer++);
+		put_user(*(call_tree_Ptr++), buffer++);
 		length--;
 		bytes_read++;
 	}
-#ifdef DEBUF
-	printk(KERN_INFO "Read %d bytes, %d left\n", bytes_read, length);
-#endif
 	/*
 	 * Read functions are supposed to return the number
 	 * of bytes actually inserted into the buffer.
@@ -123,7 +236,7 @@ static ssize_t device_read(struct file* file, char __user* buffer, size_t length
  */
 static ssize_t device_write(struct file* file, char __user* buffer, size_t length, loff_t* offset)
 {
-	int i;
+	ssize_t i;
 #ifdef DEBUG
 	printk(KERN_INFO "device_write(%p, %s, %d)\n", file, buffer, length);
 #endif
@@ -187,7 +300,7 @@ static ssize_t device_write(struct file* file, char __user* buffer, size_t lengt
 			 * Give the current message to the calling process - 
 			 * the parameter we got is a pointer, fill it.
 			 */
-			i = device_read(file, (char*)ioctl_param, 99, 0);
+			i = device_read(file, (char*)ioctl_param, 1023, 0);
 
 			/*
 			 * Put a zero at the end of the buffer, so it will be properly terminated

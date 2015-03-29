@@ -36,7 +36,7 @@ ioctl_set_msg(int file_desc, char *message)
 ioctl_get_msg(int file_desc)
 {
 	int ret_val;
-	char message[100];
+	char message[1024];
 
 	/* 
 	 * Warning - this is dangerous because we don't tell
@@ -53,7 +53,7 @@ ioctl_get_msg(int file_desc)
 		exit(-1);
 	}
 
-	printf("get_msg message:%s\n", message);
+	printf("get_msg message:\n%s\n", message);
 }
 
 ioctl_get_nth_byte(int file_desc)
@@ -85,7 +85,7 @@ ioctl_get_nth_byte(int file_desc)
 main()
 {
 	int file_desc, ret_val;
-	char *msg = "Message passed by ioctl\n";
+	char *msg = "Live today as if there is no tomorrow.\n";
 
 	file_desc = open(DEVICE_FILE_NAME, 0);
 	if (file_desc < 0) {
@@ -93,9 +93,9 @@ main()
 		exit(-1);
 	}
 
-	ioctl_get_nth_byte(file_desc);
-	ioctl_get_msg(file_desc);
 	ioctl_set_msg(file_desc, msg);
+	ioctl_get_msg(file_desc);
+	ioctl_get_nth_byte(file_desc);
 
 	close(file_desc);
 }
