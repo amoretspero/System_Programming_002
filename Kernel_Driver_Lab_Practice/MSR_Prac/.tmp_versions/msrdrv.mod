@@ -1,0 +1,2 @@
+/home/amoretspero/Documents/System_Programming_002/Kernel_Driver_Lab_Practice/MSR_Prac/msrdrv.ko
+/home/amoretspero/Documents/System_Programming_002/Kernel_Driver_Lab_Practice/MSR_Prac/msrdrv.o
