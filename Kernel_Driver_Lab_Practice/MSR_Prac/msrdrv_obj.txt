@@ -1,0 +1,165 @@
+
+msrdrv.ko:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <msrdrv_open>:
+   0:	e8 00 00 00 00       	callq  5 <msrdrv_open+0x5>
+   5:	55                   	push   %rbp
+   6:	31 c0                	xor    %eax,%eax
+   8:	48 89 e5             	mov    %rsp,%rbp
+   b:	5d                   	pop    %rbp
+   c:	c3                   	retq   
+   d:	0f 1f 00             	nopl   (%rax)
+
+0000000000000010 <msrdrv_release>:
+  10:	e8 00 00 00 00       	callq  15 <msrdrv_release+0x5>
+  15:	55                   	push   %rbp
+  16:	31 c0                	xor    %eax,%eax
+  18:	48 89 e5             	mov    %rsp,%rbp
+  1b:	5d                   	pop    %rbp
+  1c:	c3                   	retq   
+  1d:	0f 1f 00             	nopl   (%rax)
+
+0000000000000020 <msrdrv_read>:
+  20:	e8 00 00 00 00       	callq  25 <msrdrv_read+0x5>
+  25:	55                   	push   %rbp
+  26:	31 c0                	xor    %eax,%eax
+  28:	48 89 e5             	mov    %rsp,%rbp
+  2b:	5d                   	pop    %rbp
+  2c:	c3                   	retq   
+  2d:	0f 1f 00             	nopl   (%rax)
+
+0000000000000030 <msrdrv_write>:
+  30:	e8 00 00 00 00       	callq  35 <msrdrv_write+0x5>
+  35:	55                   	push   %rbp
+  36:	31 c0                	xor    %eax,%eax
+  38:	48 89 e5             	mov    %rsp,%rbp
+  3b:	5d                   	pop    %rbp
+  3c:	c3                   	retq   
+  3d:	0f 1f 00             	nopl   (%rax)
+
+0000000000000040 <msrdrv_ioctl>:
+  40:	e8 00 00 00 00       	callq  45 <msrdrv_ioctl+0x5>
+  45:	31 c0                	xor    %eax,%eax
+  47:	81 fe 01 df 00 00    	cmp    $0xdf01,%esi
+  4d:	74 01                	je     50 <msrdrv_ioctl+0x10>
+  4f:	c3                   	retq   
+  50:	55                   	push   %rbp
+  51:	48 89 e5             	mov    %rsp,%rbp
+  54:	41 57                	push   %r15
+  56:	41 56                	push   %r14
+  58:	41 55                	push   %r13
+  5a:	41 54                	push   %r12
+  5c:	4c 8d a2 10 02 00 00 	lea    0x210(%rdx),%r12
+  63:	53                   	push   %rbx
+  64:	48 89 d3             	mov    %rdx,%rbx
+  67:	83 3b 04             	cmpl   $0x4,(%rbx)
+  6a:	0f 87 be 00 00 00    	ja     12e <msrdrv_ioctl+0xee>
+  70:	8b 03                	mov    (%rbx),%eax
+  72:	ff 24 c5 00 00 00 00 	jmpq   *0x0(,%rax,8)
+  79:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+  80:	0f 31                	rdtsc  
+  82:	48 c1 e2 20          	shl    $0x20,%rdx
+  86:	89 c0                	mov    %eax,%eax
+  88:	48 09 c2             	or     %rax,%rdx
+  8b:	48 89 53 08          	mov    %rdx,0x8(%rbx)
+  8f:	48 83 c3 10          	add    $0x10,%rbx
+  93:	4c 39 e3             	cmp    %r12,%rbx
+  96:	75 cf                	jne    67 <msrdrv_ioctl+0x27>
+  98:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
+  9f:	00 
+  a0:	31 c0                	xor    %eax,%eax
+  a2:	5b                   	pop    %rbx
+  a3:	41 5c                	pop    %r12
+  a5:	41 5d                	pop    %r13
+  a7:	41 5e                	pop    %r14
+  a9:	41 5f                	pop    %r15
+  ab:	5d                   	pop    %rbp
+  ac:	c3                   	retq   
+  ad:	0f 1f 00             	nopl   (%rax)
+  b0:	44 8b 7b 0c          	mov    0xc(%rbx),%r15d
+  b4:	44 8b 73 08          	mov    0x8(%rbx),%r14d
+  b8:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+  bf:	44 8b 6b 04          	mov    0x4(%rbx),%r13d
+  c3:	31 c0                	xor    %eax,%eax
+  c5:	44 89 f2             	mov    %r14d,%edx
+  c8:	44 89 fe             	mov    %r15d,%esi
+  cb:	44 89 e9             	mov    %r13d,%ecx
+  ce:	e8 00 00 00 00       	callq  d3 <msrdrv_ioctl+0x93>
+  d3:	44 89 e9             	mov    %r13d,%ecx
+  d6:	44 89 f0             	mov    %r14d,%eax
+  d9:	44 89 fa             	mov    %r15d,%edx
+  dc:	0f 30                	wrmsr  
+  de:	48 83 c3 10          	add    $0x10,%rbx
+  e2:	4c 39 e3             	cmp    %r12,%rbx
+  e5:	75 80                	jne    67 <msrdrv_ioctl+0x27>
+  e7:	eb b7                	jmp    a0 <msrdrv_ioctl+0x60>
+  e9:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+  f0:	44 8b 43 04          	mov    0x4(%rbx),%r8d
+  f4:	44 89 c1             	mov    %r8d,%ecx
+  f7:	0f 32                	rdmsr  
+  f9:	49 89 d5             	mov    %rdx,%r13
+  fc:	89 c1                	mov    %eax,%ecx
+  fe:	89 c0                	mov    %eax,%eax
+ 100:	49 c1 e5 20          	shl    $0x20,%r13
+ 104:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 10b:	48 83 c3 10          	add    $0x10,%rbx
+ 10f:	49 09 c5             	or     %rax,%r13
+ 112:	31 c0                	xor    %eax,%eax
+ 114:	4c 89 ee             	mov    %r13,%rsi
+ 117:	e8 00 00 00 00       	callq  11c <msrdrv_ioctl+0xdc>
+ 11c:	4c 89 6b f8          	mov    %r13,-0x8(%rbx)
+ 120:	4c 39 e3             	cmp    %r12,%rbx
+ 123:	0f 85 3e ff ff ff    	jne    67 <msrdrv_ioctl+0x27>
+ 129:	e9 72 ff ff ff       	jmpq   a0 <msrdrv_ioctl+0x60>
+ 12e:	b8 01 00 00 00       	mov    $0x1,%eax
+ 133:	e9 6a ff ff ff       	jmpq   a2 <msrdrv_ioctl+0x62>
+ 138:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
+ 13f:	00 
+
+0000000000000140 <init_module>:
+ 140:	e8 00 00 00 00       	callq  145 <init_module+0x5>
+ 145:	55                   	push   %rbp
+ 146:	48 c7 c2 00 00 00 00 	mov    $0x0,%rdx
+ 14d:	be 01 00 00 00       	mov    $0x1,%esi
+ 152:	bf 00 00 f0 0d       	mov    $0xdf00000,%edi
+ 157:	c7 05 00 00 00 00 00 	movl   $0xdf00000,0x0(%rip)        # 161 <init_module+0x21>
+ 15e:	00 f0 0d 
+ 161:	48 89 e5             	mov    %rsp,%rbp
+ 164:	e8 00 00 00 00       	callq  169 <init_module+0x29>
+ 169:	e8 00 00 00 00       	callq  16e <init_module+0x2e>
+ 16e:	48 c7 c6 00 00 00 00 	mov    $0x0,%rsi
+ 175:	48 89 c7             	mov    %rax,%rdi
+ 178:	48 c7 40 40 00 00 00 	movq   $0x0,0x40(%rax)
+ 17f:	00 
+ 180:	48 89 70 48          	mov    %rsi,0x48(%rax)
+ 184:	48 89 05 00 00 00 00 	mov    %rax,0x0(%rip)        # 18b <init_module+0x4b>
+ 18b:	e8 00 00 00 00       	callq  190 <init_module+0x50>
+ 190:	8b 35 00 00 00 00    	mov    0x0(%rip),%esi        # 196 <init_module+0x56>
+ 196:	48 8b 3d 00 00 00 00 	mov    0x0(%rip),%rdi        # 19d <init_module+0x5d>
+ 19d:	ba 01 00 00 00       	mov    $0x1,%edx
+ 1a2:	e8 00 00 00 00       	callq  1a7 <init_module+0x67>
+ 1a7:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 1ae:	31 c0                	xor    %eax,%eax
+ 1b0:	e8 00 00 00 00       	callq  1b5 <init_module+0x75>
+ 1b5:	31 c0                	xor    %eax,%eax
+ 1b7:	5d                   	pop    %rbp
+ 1b8:	c3                   	retq   
+ 1b9:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+
+00000000000001c0 <cleanup_module>:
+ 1c0:	e8 00 00 00 00       	callq  1c5 <cleanup_module+0x5>
+ 1c5:	55                   	push   %rbp
+ 1c6:	48 8b 3d 00 00 00 00 	mov    0x0(%rip),%rdi        # 1cd <cleanup_module+0xd>
+ 1cd:	48 89 e5             	mov    %rsp,%rbp
+ 1d0:	e8 00 00 00 00       	callq  1d5 <cleanup_module+0x15>
+ 1d5:	8b 3d 00 00 00 00    	mov    0x0(%rip),%edi        # 1db <cleanup_module+0x1b>
+ 1db:	be 01 00 00 00       	mov    $0x1,%esi
+ 1e0:	e8 00 00 00 00       	callq  1e5 <cleanup_module+0x25>
+ 1e5:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 1ec:	31 c0                	xor    %eax,%eax
+ 1ee:	e8 00 00 00 00       	callq  1f3 <cleanup_module+0x33>
+ 1f3:	5d                   	pop    %rbp
+ 1f4:	c3                   	retq   

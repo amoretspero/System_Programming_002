@@ -59,8 +59,33 @@ static long long read_msr(unsigned int ecx) {
     return result;
 }
 
+static long read_eax(void)
+{
+	unsigned int eax = 0;
+	__asm__ __volatile__("\t movl %%eax, %0" : "=r"(eax));
+	printk(KERN_INFO "Read eax : %08x\n", eax);
+	return eax;
+}
+
+static long read_ecx(void)
+{
+	unsigned int ecx = 0;
+	__asm__ __volatile__("\t movl %%ecx, %0" : "=r"(ecx));
+	printk(KERN_INFO "Read ecx : %08x\n", ecx);
+	return ecx;
+}
+
+static long read_edx(void)
+{
+	unsigned int edx = 0;
+	__asm__ __volatile__("\t movl %%edx, %0" : "=r"(edx));
+	printk(KERN_INFO "Read edx : %08x\n", edx);
+	return edx;
+}
+
 static void write_msr(int ecx, unsigned int eax, unsigned int edx) {
     printk(KERN_INFO "Module msrdrv: Writing 0x%08x:0x%08x to MSR 0x%04x\n", edx, eax, ecx);
+	long eax_temp = read_eax();
     __asm__ __volatile__("wrmsr" : : "c"(ecx), "a"(eax), "d"(edx));
 }
 
@@ -102,6 +127,18 @@ static long msrdrv_ioctl(struct file *f, unsigned int ioctl_num, unsigned long i
             dprintk(KERN_ALERT "Module " DEV_NAME ": seen MSR_RDTSC command\n")
             msrops->value = read_tsc();
             break;
+		case MSR_READ_EAX:
+			dprintk(KERN_ALERT "Module " DEV_NAME ": seen MSR_READ_EAX command\n")
+			msrops->value = read_eax();
+			break;
+		case MSR_READ_ECX:
+			dprintk(KERN_ALERT "Module " DEV_NAME ": seen MSR_READ_ECX command\n")
+			msrops->value = read_ecx();
+			break;
+		case MSR_READ_EDX:
+			dprintk(KERN_ALERT "Module " DEV_NAME ": seen MSR_READ_EDX command\n")
+			msrops->value = read_edx();
+			break;
         default:
             dprintk(KERN_ALERT "Module " DEV_NAME ": Unknown option 0x%x\n", msrops->op)
             return 1;

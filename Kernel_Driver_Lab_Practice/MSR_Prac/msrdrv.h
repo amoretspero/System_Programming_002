@@ -17,7 +17,10 @@ enum MsrOperation {
     MSR_READ  = 1,
     MSR_WRITE = 2,
     MSR_STOP  = 3,
-    MSR_RDTSC = 4
+    MSR_RDTSC = 4,
+	MSR_READ_EAX = 5,
+	MSR_READ_ECX = 6,
+	MSR_READ_EDX = 7
 };
 
 struct MsrInOut {
