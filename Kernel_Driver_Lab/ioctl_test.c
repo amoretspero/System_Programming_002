@@ -134,9 +134,11 @@ main()
 		exit(-1);
 	}
 
+	printf("=============================================\n");
 	ioctl_set_msg(file_desc, msg);
 	ioctl_get_msg(file_desc);
 	//ioctl_get_nth_byte(file_desc);
+	printf("=============================================\n");
 
 	close(file_desc);
 }

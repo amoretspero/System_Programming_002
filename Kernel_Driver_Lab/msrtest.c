@@ -7,6 +7,76 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
+#include <time.h>
+
+
+const unsigned long totalPoints = 64*1048576;
+
+double generateRandomPoint(void)
+{
+	double generatedRand;
+	generatedRand = ((double)rand() / (double)RAND_MAX)*2.0 - 1.0;
+	return generatedRand;
+}
+
+double calculatePi(int num_in_circ, int total)
+{
+	return (4.0f * ((double)num_in_circ/(double)total));
+}
+
+double getDistanceFromOrigin(double x, double y)
+{
+	//printf("dist : %lf\n", (sqrt(x*x + y*y)));
+	return (sqrt(x*x + y*y));
+
+}
+
+double calc_pi(void)
+{
+	
+	/* Seed for Random */
+	srand((unsigned)time(NULL));
+	/* Variables for Profiling */
+	clock_t start_time, end_time;
+	printf("%s\n", "Estimating Pi Using Monte-Carlo Method\n");
+	/* Profiling Start */
+	start_time = clock();
+	/* Point Counter */
+	unsigned long inCircle = 0;
+	/* Iterator for Monte-Carlo-Pi Estimation */
+	unsigned long iterationCounter;
+	for (iterationCounter = 0; iterationCounter < totalPoints; iterationCounter++)
+	{
+		/* Generate two random points
+		(posx, posy) = ([-1.0,+1,0],[-1.0,+1.0] */
+		double positionX = generateRandomPoint();
+		double positionY = generateRandomPoint();
+		/* Print every generated point */
+		//fprintf(stdout, "Generated Point: (x,y) = (%f,%f)\n", positionX, positionY);
+		/* Get the distance */
+		double distanceFromOrigin = getDistanceFromOrigin(positionX, positionY);
+		/* Accumuate point counter */
+		if (distanceFromOrigin < 1.0)
+			inCircle++;
+	}
+	/* Caculate Pi */
+	double estimatedPi = calculatePi(inCircle, totalPoints);
+	/* Print the result */
+	printf("Pi is estimated as: %f\n", estimatedPi);
+	/* End of profiling */
+	end_time = clock();
+	/* Print profiling result */
+	printf("Time : %f\n", ((double)(end_time - start_time)) / CLOCKS_PER_SEC);
+	/* Wait for user to key the hit */
+	printf("Calculation has been finished.\n\n");
+	//getch();
+	/* Non-anomalous termination */
+	return 0;
+}
+
+
+
 
 static int loadDriver()
 {
@@ -78,25 +148,48 @@ int main(void)
 		{ MSR_READ_EDX }
 	};
 
+	struct MsrInOut read_tsc[] = {
+		{ MSR_RDTSC }
+	};
 
+	printf("\n=============================================\n");
     fd = loadDriver();
-	printf("Driver has been loaded!\n\n");
+	printf("\nDriver has been loaded!\n\n");
 	printf("Before starting instructions :\n");
 	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_read_eax);
 	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_read_ecx);
 	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_read_edx);
-	printf("eax : %016llx, ecx : %016llx, edx : %016llx\n\n", msr_read_eax[0].value, msr_read_ecx[0].value, msr_read_edx[0].value);
+	ioctl(fd, IOCTL_MSR_CMDS, (long long)read_tsc);
+	printf("eax : %016llx, ecx : %016llx, edx : %016llx\n", msr_read_eax[0].value, msr_read_ecx[0].value, msr_read_edx[0].value);
+	printf("time stamp : %016lld\n\n", read_tsc[0].value);
+	long long ts_start = read_tsc[0].value;
     ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_start);
-    printf("This is a hex number 0x%x\n", -1);
-    printf("%d * %d = %d\n", 123, 456, 123*456);
+	printf("=============================================\n");
+	printf("Performance Monitoring Unit has been reset and started.\n\n");
+    printf("Now calculating PI value by Monte-Carlo Method with n=2^26\n\n");
+	double pi_val = calc_pi();
     ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_stop);
+	printf("Performance Monitoring Unit has been stopped.\n\n");
+	printf("=============================================\n");
+	printf("After executed insturcions :\n");
+	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_read_eax);
+	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_read_ecx);
+	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_read_edx);
+	ioctl(fd, IOCTL_MSR_CMDS, (long long)read_tsc);
+	long long ts_end = read_tsc[0].value;
+	printf("eax : %016llx, ecx : %016llx, edx : %016llx\n", msr_read_eax[0].value, msr_read_ecx[0].value, msr_read_edx[0].value);
+	printf("time stamp : %016lld\n\n", read_tsc[0].value);
+	printf("time stamp difference : %016lld\n\n", (ts_end - ts_start));
+	printf("=============================================\n");
+	printf("Results :\n");
     printf("uops retired:    %7lld\n", msr_stop[2].value);
     printf("uops issued:     %7lld\n", msr_stop[3].value);
     printf("stalled cycles:  %7lld\n", msr_stop[4].value);
     printf("resource stalls: %7lld\n", msr_stop[5].value);
     printf("instr retired:   %7lld\n", msr_stop[6].value);
     printf("core cycles:     %7lld\n", msr_stop[7].value);
-    printf("ref cycles:      %7lld\n", msr_stop[8].value);
+    printf("ref cycles:      %7lld\n\n", msr_stop[8].value);
+	printf("=============================================\n");
     closeDriver(fd);
     return 0;
 }

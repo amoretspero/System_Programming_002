@@ -1,2 +1,0 @@
-/home/amoretspero/Documents/System_Programming_002/Kernel_Driver_Lab_Practice/Prac7_Talking_to_Device_Files/chardev.ko
-/home/amoretspero/Documents/System_Programming_002/Kernel_Driver_Lab_Practice/Prac7_Talking_to_Device_Files/chardev.o

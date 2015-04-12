@@ -152,7 +152,7 @@ int main(void)
 		{ MSR_RDTSC }
 	};
 
-
+	printf("\n=============================================\n");
     fd = loadDriver();
 	printf("\nDriver has been loaded!\n\n");
 	printf("Before starting instructions :\n");
@@ -164,11 +164,13 @@ int main(void)
 	printf("time stamp : %016lld\n\n", read_tsc[0].value);
 	long long ts_start = read_tsc[0].value;
     ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_start);
+	printf("=============================================\n");
 	printf("Performance Monitoring Unit has been reset and started.\n\n");
     printf("Now calculating PI value by Monte-Carlo Method with n=2^26\n\n");
 	double pi_val = calc_pi();
     ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_stop);
 	printf("Performance Monitoring Unit has been stopped.\n\n");
+	printf("=============================================\n");
 	printf("After executed insturcions :\n");
 	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_read_eax);
 	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_read_ecx);
@@ -178,6 +180,7 @@ int main(void)
 	printf("eax : %016llx, ecx : %016llx, edx : %016llx\n", msr_read_eax[0].value, msr_read_ecx[0].value, msr_read_edx[0].value);
 	printf("time stamp : %016lld\n\n", read_tsc[0].value);
 	printf("time stamp difference : %016lld\n\n", (ts_end - ts_start));
+	printf("=============================================\n");
 	printf("Results :\n");
     printf("uops retired:    %7lld\n", msr_stop[2].value);
     printf("uops issued:     %7lld\n", msr_stop[3].value);
@@ -186,6 +189,7 @@ int main(void)
     printf("instr retired:   %7lld\n", msr_stop[6].value);
     printf("core cycles:     %7lld\n", msr_stop[7].value);
     printf("ref cycles:      %7lld\n\n", msr_stop[8].value);
+	printf("=============================================\n");
     closeDriver(fd);
     return 0;
 }
