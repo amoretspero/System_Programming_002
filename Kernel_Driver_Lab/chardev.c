@@ -194,7 +194,7 @@ static ssize_t device_read(struct file* file, char __user* buffer, size_t length
 		    }
 		    if (task == current)
 		    {
-			p = "caller";
+			p = string_adder("(caller)", p);
 		    }
 		}
 		up_read(&mm->mmap_sem);

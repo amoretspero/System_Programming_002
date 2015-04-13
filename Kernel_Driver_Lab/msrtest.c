@@ -111,14 +111,14 @@ int main(void)
         { MSR_WRITE, 0xc2, 0x00, 0x00 },        // ia32_pmc1: zero value (35-5)
         { MSR_WRITE, 0xc3, 0x00, 0x00 },        // ia32_pmc2: zero value (35-5)
         { MSR_WRITE, 0xc4, 0x00, 0x00 },        // ia32_pmc3: zero value (35-5)
-        { MSR_WRITE, 0x309, 0x00, 0x00 },       // ia32_fixed_ctr0: zero value (35-17)
-        { MSR_WRITE, 0x30a, 0x00, 0x00 },       // ia32_fixed_ctr1: zero value (35-17)
-        { MSR_WRITE, 0x30b, 0x00, 0x00 },       // ia32_fixed_ctr2: zero value (35-17)
-        { MSR_WRITE, 0x186, 0x004101c2, 0x00 }, // ia32_perfevtsel1, UOPS_RETIRED.ALL (19-28)
-        { MSR_WRITE, 0x187, 0x0041010e, 0x00 }, // ia32_perfevtsel0, UOPS_ISSUED.ANY (19.22)
-        { MSR_WRITE, 0x188, 0x01c1010e, 0x00 }, // ia32_perfevtsel2, UOPS_ISSUED.ANY-stalls (19-22)
-        { MSR_WRITE, 0x189, 0x004101a2, 0x00 }, // ia32_perfevtsel3, RESOURCE_STALLS.ANY (19-27)
-        { MSR_WRITE, 0x38d, 0x111, 0x00 },      // ia32_perf_fixed_ctr_ctrl: ensure 3 FFCs enabled
+		{ MSR_WRITE, 0x309, 0x00, 0x00 },       // ia32_fixed_ctr0: zero value (35-17) - Instruction Retired
+        { MSR_WRITE, 0x30a, 0x00, 0x00 },       // ia32_fixed_ctr1: zero value (35-17) - CPU Clock UnHalted.Core
+        { MSR_WRITE, 0x30b, 0x00, 0x00 },       // ia32_fixed_ctr2: zero value (35-17) - CPU Clock UnHalted.Ref
+        { MSR_WRITE, 0x186, 0x00414f2e, 0x00 }, // ia32_perfevtsel0, Longest Latency Cache Reference.
+        { MSR_WRITE, 0x187, 0x0041412e, 0x00 }, // ia32_perfevtsel1, Longest Latency Cache Miss.
+        { MSR_WRITE, 0x188, 0x0041003c, 0x00 }, // ia32_perfevtsel2, UnHalted Core Cycles.
+        { MSR_WRITE, 0x189, 0x004100c5, 0x00 }, // ia32_perfevtsel3, Branch Misses Retired.
+        { MSR_WRITE, 0x38d, 0x333, 0x00 },      // ia32_perf_fixed_ctr_ctrl: ensure 3 FFCs enabled
         { MSR_WRITE, 0x38f, 0x0f, 0x07 },       // ia32_perf_global_ctrl: enable 4 PMCs & 3 FFCs
         { MSR_STOP, 0x00, 0x00 }
     };
@@ -171,7 +171,7 @@ int main(void)
     ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_stop);
 	printf("Performance Monitoring Unit has been stopped.\n\n");
 	printf("=============================================\n");
-	printf("After executed insturcions :\n");
+	printf("After executed instructions :\n");
 	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_read_eax);
 	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_read_ecx);
 	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_read_edx);
@@ -182,13 +182,13 @@ int main(void)
 	printf("time stamp difference : %016lld\n\n", (ts_end - ts_start));
 	printf("=============================================\n");
 	printf("Results :\n");
-    printf("uops retired:    %7lld\n", msr_stop[2].value);
-    printf("uops issued:     %7lld\n", msr_stop[3].value);
-    printf("stalled cycles:  %7lld\n", msr_stop[4].value);
-    printf("resource stalls: %7lld\n", msr_stop[5].value);
-    printf("instr retired:   %7lld\n", msr_stop[6].value);
-    printf("core cycles:     %7lld\n", msr_stop[7].value);
-    printf("ref cycles:      %7lld\n\n", msr_stop[8].value);
+    printf("Longest Latency Cache Reference:    %7lld\n", msr_stop[2].value);	// Original : uops_retired
+    printf("Longest Latency Cache Miss:         %7lld\n", msr_stop[3].value);	// Original : uops_issued
+    printf("UnHalted Core Cycles:               %7lld\n", msr_stop[4].value);	// Original : stalled cycles
+    printf("Branch Misses Retired:              %7lld\n", msr_stop[5].value);	// Original : resource stalls
+    printf("Instruction Retired:                %7lld\n", msr_stop[6].value);	
+    printf("CPU Clock UnHalted - Core:          %7lld\n", msr_stop[7].value);
+    printf("CPU Clock UnHalted - Ref:           %7lld\n\n", msr_stop[8].value);
 	printf("=============================================\n");
     closeDriver(fd);
     return 0;
