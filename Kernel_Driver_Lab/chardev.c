@@ -81,6 +81,9 @@ char* string_adder(char* str1, char* str2)
 {
     int len1 = 0;
     int len2 = 0;
+    int total_len;
+    int cnt;
+    char* res;
     while(str1[len1] != '\0')
     {
 	len1++;
@@ -90,9 +93,8 @@ char* string_adder(char* str1, char* str2)
 	len2++;
     }
    /* printf("length of str1 : %d, length of str2 : %d\n", len1, len2);*/
-    int total_len = len1+len2;
-    int cnt;
-    char* res = kmalloc(sizeof(char)*(total_len+1), GFP_ATOMIC);
+    total_len = len1+len2;
+    res = kmalloc(sizeof(char)*(total_len+1), GFP_ATOMIC);
     for(cnt = 0; cnt < len1; cnt++)
     {
 	res[cnt] = str1[cnt];
@@ -107,9 +109,10 @@ char* string_adder(char* str1, char* str2)
 char* int_to_str(int num)
 {
     char* res = "";
+    int temp;
     while(num > 9)
     {
-	int temp = num%10;
+	temp = num%10;
 	if (temp == 0) { res = string_adder(res, "0");}
 	else if (temp == 1) { res = string_adder(res, "1"); }
 	else if (temp == 2) { res = string_adder(res, "2"); }
@@ -122,7 +125,7 @@ char* int_to_str(int num)
 	else { res = string_adder(res, "9"); }
 	num = num/10;
     }	
-    int temp = num;
+    temp = num;
     	if (temp == 0) { res = string_adder(res, "0");}
     	else if (temp == 1) { res = string_adder(res, "1"); }
 	else if (temp == 2) { res = string_adder(res, "2"); }
@@ -149,8 +152,15 @@ static ssize_t device_read(struct file* file, char __user* buffer, size_t length
 	 * Number of bytes actually written to the buffer.
 	 */
 	int bytes_read = 0;
+	char* call_tree;
+	struct task_struct* task;
+	int stopper;
+	char* pathname;
+	char* p = "";
+	struct mm_struct* mm;
+	int prev_pid;
 #ifdef DEBUG
-	printk(KERN_INFO "device_read(%p, %p, %d)\n", file, buffer, length);
+	printk(KERN_INFO "device_read(%p, %p, %d)\n", file, buffer, (int)length);
 #endif
 
 	/*
@@ -165,18 +175,15 @@ static ssize_t device_read(struct file* file, char __user* buffer, size_t length
 	/*
 	 * Actually put the data into the buffer
 	 */
-	char* call_tree = "";
+	call_tree = "";
 #ifdef DEBUG
-	printk(KERN_INFO "Read %d bytes, %d left\n", bytes_read, length);
+	printk(KERN_INFO "Read %d bytes, %d left\n", bytes_read, (int)length);
 	printk(KERN_INFO "Current PID : %d\n", current->pid);
 	printk(KERN_INFO "Parent PID : %d\n", current->real_parent->pid);
 #endif
-	struct task_struct* task = current;
-	int stopper = 0;
-	char* pathname;
-	char* p;
-	struct mm_struct* mm;
-	int prev_pid = current->pid;
+	task = current;
+	stopper = 0;
+	prev_pid = current->pid;
 	do
 	{
 	    //printk(KERN_INFO "PID : %d\n", task->pid);
@@ -234,11 +241,11 @@ static ssize_t device_read(struct file* file, char __user* buffer, size_t length
 /*
  * This function is called when somebody tries to write into our device file.
  */
-static ssize_t device_write(struct file* file, char __user* buffer, size_t length, loff_t* offset)
+static ssize_t device_write(struct file* file, const char __user* buffer, size_t length, loff_t* offset)
 {
 	ssize_t i;
 #ifdef DEBUG
-	printk(KERN_INFO "device_write(%p, %s, %d)\n", file, buffer, length);
+	printk(KERN_INFO "device_write(%p, %s, %d)\n", file, buffer, (int)length);
 #endif
 	for(i = 0; i < length && i < BUF_LEN; i++)
 	{
