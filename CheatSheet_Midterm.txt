@@ -1,0 +1,72 @@
+Cheat Sheet Must.
+
+03. Linking and Loading
+1) static linking diagram
+2) Linker's role(3 things)
+3) 3 kinds of object files.
+4) ELF object file format and descriptions.
+5) Linker symbols - Global, External, Local // Seperation between 'program' variables.
+6) Linker's symbol rules(strong, week, duplicates)
+7) Static libraries - characteristics, command line
+8) Executable object file loaded into memory - Address space diagram.
+9) Occurance of dynamic linking(3 ways and their applications.)
+10) 3 ways of library interpositioning.(key ways)
+
+04. Process Management
+1) Diagram for process concept and states, control block.
+2) fork() and VM - Concepts and COW
+3) Zombie process - idea, reaping
+4) execve - characteristics, stack diagram, way to use with VM.
+5) Signal - kinds of signals, 
+6) Shared memory model for IPC - diagram, mechanism
+7) Message passing model for IPC - properties of direct, indirect communication, synchronization, buffer, 
+8) Sockets - concept
+9) Remote Procedure Calls - concepts, stub, execution order, RMI(remote method invocation) in JAVA
+10) Pipes - concepts, ordinary/named pipes(UNIX, Windows, characteristics)
+
+04.b Exceptions
+1) Interrupt Vectors - Concept, diagram
+2) Synchronous Exceptions - traps, faults, aborts
+3) Asynchronous Exceptions - concepts, examples(3 kinds)
+4) I/O interrupts - concepts, mechanism
+5) x86 processor interrupts - diagram, roles of each pin, NMI case(characteristics, problems), IRQ case characteristics
+6) Implementation of Linux/IA32 System Calls - method, registers
+
+05. Process Scheduling
+1) CPU Scheduler - concepts, preemptive, non-preemptive
+2) Dispatcher - concepts, latency
+3) Scheduling Criteria - 5 concepts, calculations
+4) Process Scheduling Algorithms - FIFS, SJF, Priority, RR, Multilevel Queue, Multilevel Feedback Queue
+				   (concepts, calculations, exponential averaging - SJF, Aging - Priority, Examples - MQ, MFQ)
+5) Thread Scheduling - PCS(process contention scope) for user thread, SCS(system contention scope) for kernel thread
+6) Multiple processor Scheduling - processor affinity, load balancing
+7) Operating System example - Solaris, Windows, Linux(Implementation base, Thread classes, characteristics)
+
+06. Virtual Memory
+1) Address Translation - Concepts, diagram, PTE, page faults, working set, thrashing
+2) VM as a Tool for Memory Management - key idea, memory allocation, sharing
+3) Simplifying Linking and Loading with execve() and VM - concepts, diagram
+4) VM as a Tool for Memory Protection - permission bits, diagram
+5) Address Translation - diagram
+6) Integraing VM and Cache - diagram, order, TLB, what are stored in where.
+7) Review of Symbols for VA, PA - VA(TLBI, TLBT, VPO, VPN), PA(PPO, PPN, CO, CI, CT), how they are used.
+8) Multilevel Page Tables - Concepts, address translation
+9) Core i7 Page Table Entry - Level1~3, Level4, diagram
+10) Cute Trick for speeding up L1 access - diagram, Observation
+11) Memory Mapping - concepts, backing area, dirty pages, demand paging, shared memory objects, COW objects
+12) User-Level Memory Mapping - mmap(parameters, diagram)
+
+07. Dynamic Memory Allocation
+1) Dynamic Memory Allocation - characteristics, malloc, free, calloc, realloc, sbrk
+2) Allocation constraints - Applications, Allocators(6 kinds)
+3) Performance goal - Throughput, Peak memory utilization
+		      (aggregate payload, current heap size, peak memory utilization after k requests)
+4) Fragmentation - Internal, External and their cause.
+5) Implicit list method - block diagram, list diagram example, finding free block(first, next, best), allocating in free block,
+			  freeing block with coalescing, bidirectional coalescing, coalescing policy
+6) Explicit list method - concepts, block diagram, allocating diagram, insertion policy(LIFO, address-ordered),
+			  freeing with LIFO policy
+7) Segregated List Allocators - concepts, allocation algorithm, freeing algorithm, advantages
+8) Memory-Related Perils and Pitfalls - Dereferencing bad pointers, Reading unintialized memory, Overwriting memory,
+					Referencing nonexistent variables, Freeing blocks multiple times,
+					Referencing freed blocks, Failing to free blocks
