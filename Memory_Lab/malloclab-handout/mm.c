@@ -60,6 +60,8 @@ void* lst_tracker_free;
 void* lst_free_next_temp;
 void* lst_free_prev_temp;
 void* lst_free_root_temp;
+int allocation_counter;
+int free_counter;
 void free_list_print (void* lst)
 {
 	if (lst == NULL)
@@ -68,10 +70,10 @@ void free_list_print (void* lst)
 	}
 	else
 	{
-		printf("FREE LIST PRINTER\n");
+		//printf("FREE LIST PRINTER\n");
 		while (lst != NULL)
 		{
-			printf("Address : %p, Size : %d, next free block : %p, prev free block : %p\n", lst, *(int*)lst, (void*)(*(int*)(lst + 8)), (void*)(*(int*)(lst + 12)));
+			//printf("Address : %p, Size : %d, next free block : %p, prev free block : %p\n", lst, *(int*)lst, (void*)(*(int*)(lst + 8)), (void*)(*(int*)(lst + 12)));
 			lst = (void*)(*(int*)(lst + 8));
 		}
 	}
@@ -144,12 +146,14 @@ int mm_init(range_t **ranges)
  */
 void* mm_malloc(size_t size)
 {
+  // For debuging.
+  //printf("ALLOCATION - %d\n", (allocation_counter++));
   //int newsize = ALIGN(size + SIZE_T_SIZE);
   int newsize = ALIGN(size + 2*SIZE_T_SIZE); // 8 for header and footer of memory block in heap.
   //void *p = mem_sbrk(newsize);
   if (lst_start == lst_end) // Allocating case 1 : There is no block allocated.
   {
-    printf("Allocating case 1 - block size : %d\n", newsize);
+    //printf("Allocating case 1 - block size : %d\n", newsize);
     lst_current = mem_sbrk(newsize);
     if (lst_current == (void *)-1)
     {
@@ -159,90 +163,106 @@ void* mm_malloc(size_t size)
     (*(int*)(lst_current + (newsize - 8))) = (newsize & -8) + 1;
     lst_end = lst_current + newsize;
     lst_start = lst_current;
-    printf("mm_malloc - new allocation - lst_start : %p, lst_end : %p, allocated : %d\n", lst_start, lst_end, ((*(int*)lst_start) & 1));
+    //printf("mm_malloc - new allocation - lst_start : %p, lst_end : %p, allocated : %d\n", lst_start, lst_end, ((*(int*)lst_start) & 1));
   }
   else // Allocating case 2 : Allocated blocks exists. Free or allocated. Find 'free and allocatable size' block. If not exists, allocate new block at the end of list.
   {
     int allocated = 0;
     //for (lst_tracker_free = lst_start_free; ((lst_tracker_free != NULL) && ((*(int*)(lst_tracker_free + 8)) != 0)); lst_tracker_free = ((void*)(*((int*)lst_tracker_free + 2))))
     lst_tracker_free = lst_start_free;
-    printf("Allocating case 2 - lst_start_free : %p, lst_tracker_free : %p, lst_end_free : %p, block size - %d\n", lst_start_free, lst_tracker_free, lst_end_free, newsize);
+    //printf("Allocating case 2 - lst_start_free : %p, lst_tracker_free : %p, lst_end_free : %p, block size - %d\n", lst_start_free, lst_tracker_free, lst_end_free, newsize);
     while((lst_tracker_free != NULL)) //&& ((*(int*)(lst_tracker_free + 8)) != 0))
     {
-      printf("In for loop - lst_start_free : %p, lst_tracker_free : %p, next free block : %x, lst_end_free : %p, free block size : %d\n", lst_start_free, lst_tracker_free, *(int*)(lst_tracker_free + 8), lst_end_free, ((*(int*)lst_tracker_free) & -8));
-      printf("allocated = %d\n", allocated);
+      //printf("In for loop - lst_start_free : %p, lst_tracker_free : %p, next free block : %x, lst_end_free : %p, free block size : %d\n", lst_start_free, lst_tracker_free, *(int*)(lst_tracker_free + 8), lst_end_free, ((*(int*)lst_tracker_free) & -8));
+      //printf("allocated = %d\n", allocated);
       if (((*(int*)lst_tracker_free & -8) >= newsize + 24)) // Free and allocatable size block has been found.
       {
-	printf("debug 1\n");
-	int lst_tracker_free_size = (*(int*)lst_tracker_free & -8); // Size of block that lst_tracker points. In bytes.
-	printf("debug 2\n");
-	lst_free_next_temp = (void*)(*((int*)lst_tracker_free + 2));
-	printf("debug 3\n");
-	lst_free_prev_temp = (void*)(*((int*)lst_tracker_free + 3));
-	lst_current = lst_tracker_free; // Gets the address of current tracking block.
-	(*(int*)lst_current) = (newsize & -8) + 1; // Set the header.
-	(*(int*)(lst_current + (newsize - 8))) = (newsize & -8) + 1; // Set the footer.
-	(*(int*)(lst_current + newsize)) = ((lst_tracker_free_size - newsize) & -8) + ((*(int*)(lst_current + lst_tracker_free_size - 8)) & 3); // Set the header of remaining block.
-	(*(int*)(lst_tracker_free + lst_tracker_free_size - 8)) = ((lst_tracker_free_size - newsize) & -8) + ((*(int*)(lst_current + lst_tracker_free_size - 8)) & 3); // Set the footer of remaining block.
-	(*(int*)(lst_current + newsize + 8)) = (int)lst_free_next_temp; // Set the next pointer of remaining block.
-	(*(int*)(lst_current + newsize + 12)) = (int)lst_free_prev_temp; // Set the prev pointer of remaining block.
-	(*(int*)(lst_current - 8)) = ((*(int*)(lst_current - 8)) | 2); // Set the previous block's footer to recognize its next block(current) as allocated.
-	(*(int*)(lst_current - ((*(int*)(lst_current - 8)) & -8))) = ((*(int*)(lst_current - 8)) | 2); // Set the previous block's header to recognize its next block(current) as allocated.
-	// Setting free list order.
-	if (lst_tracker_free == lst_start_free) // Selected free block is the first free block on list.
-	{
-	  printf("lst_tracker_free = lst_start_free\n");
-	  lst_start_free = (lst_current + newsize);
-	  lst_tracker_free = lst_start_free;
-	  /*if ((*(int*)(lst_tracker_free + 8)) != 0)
-	  {
-	    lst_tracker_free = ((void*)(*((int*)lst_tracker_free + 2)));
-	  }*/
-	}
-	else
-	{
-	  lst_tracker_free = lst_current + newsize;
-	}
+		//printf("debug 1\n");
+		int lst_tracker_free_size = (*(int*)lst_tracker_free & -8); // Size of block that lst_tracker points. In bytes.
+		//printf("debug 2\n");
+		lst_free_next_temp = (void*)(*((int*)lst_tracker_free + 2));
+		//printf("debug 3\n");
+		lst_free_prev_temp = (void*)(*((int*)lst_tracker_free + 3));
+		lst_current = lst_tracker_free; // Gets the address of current tracking block.
+		(*(int*)lst_current) = (newsize & -8) + 1; // Set the header.
+		(*(int*)(lst_current + (newsize - 8))) = (newsize & -8) + 1; // Set the footer.
+		(*(int*)(lst_current + newsize)) = ((lst_tracker_free_size - newsize) & -8) + ((*(int*)(lst_current + lst_tracker_free_size - 8)) & 3); // Set the header of remaining block.
+		(*(int*)(lst_tracker_free + lst_tracker_free_size - 8)) = ((lst_tracker_free_size - newsize) & -8) + ((*(int*)(lst_current + lst_tracker_free_size - 8)) & 3); // Set the footer of remaining block.
+		(*(int*)(lst_current + newsize + 8)) = (int)lst_free_next_temp; // Set the next pointer of remaining block.
+		(*(int*)(lst_current + newsize + 12)) = (int)lst_free_prev_temp; // Set the prev pointer of remaining block.
+		(*(int*)(lst_current - 8)) = ((*(int*)(lst_current - 8)) | 2); // Set the previous block's footer to recognize its next block(current) as allocated.
+		(*(int*)(lst_current - ((*(int*)(lst_current - 8)) & -8))) = ((*(int*)(lst_current - 8)) | 2); // Set the previous block's header to recognize its next block(current) as allocated.
+		// Setting free list order.
+		if (lst_tracker_free == lst_start_free) // Selected free block is the first free block on list.
+		{
+		  //printf("lst_tracker_free = lst_start_free\n");
+		  lst_start_free = (lst_current + newsize);
+		  lst_tracker_free = lst_start_free;
+		}
+		else
+		{
+		  lst_tracker_free = lst_current + newsize;
+		}
 
-	if (*(int*)(lst_tracker_free + 12) != 0)
-	{
-	  /*if (*(int*)(lst_start_free + 8) != 0)
-	  {
-	    *((int*)(*(int*)(lst_start_free + 12)) + 2) = (int)(lst_current + newsize); // Set the next pointer of prev block's previous free block to prev block's next free block.
-	  }
-	  else
-	  {
-		*((int*)(*(int*)(lst_start_free + 12)) + 2) = 0;
-	  }*/
-	  *((int*)(*(int*)(lst_tracker_free + 12)) + 2) = (int)(lst_current + newsize);
-	}
-	if (*(int*)(lst_tracker_free + 8) != 0)
-	{
-	  /*if (*(int*)(lst_start_free + 12) != 0)
-	  {
-	    *((int*)(*(int*)(lst_start_free + 8)) + 3) = (int)(lst_current + newsize); // Set the prev pointer of prev block's next free block to prev block's previous free block.
-	  }
-	  else
-	  {
-		*((int*)(*(int*)(lst_start_free + 8)) + 3) = 0;
-	  }*/
-	  *((int*)(*(int*)(lst_tracker_free + 8)) + 3) = (int)(lst_current + newsize);
-	}
+		if (*(int*)(lst_tracker_free + 12) != 0)
+		{
+		  *((int*)(*(int*)(lst_tracker_free + 12)) + 2) = (int)(lst_current + newsize);
+		}
+		if (*(int*)(lst_tracker_free + 8) != 0)
+		{
+		  *((int*)(*(int*)(lst_tracker_free + 8)) + 3) = (int)(lst_current + newsize);
+		}
 
-	// In this case, we do not add a new allocated block at the end of list, so we don't have to modify lst_end.
-	allocated = 1; // Indicates block is allocated.
-	printf("Allocated using free block - lst_start_free : %p, lst_tracker_free : %p, next free block : %x, free block size : %d, allocated : %d\n", lst_start_free, lst_tracker_free, ((*(int*)(lst_tracker_free + 8))), ((*(int*)lst_tracker_free) & -8), ((*(int*)lst_current) & 1));
-	break;
+		// In this case, we do not add a new allocated block at the end of list, so we don't have to modify lst_end.
+		allocated = 1; // Indicates block is allocated.
+		//printf("Allocated using free block - lst_start_free : %p, lst_tracker_free : %p, next free block : %x, free block size : %d, allocated : %d\n", lst_start_free, lst_tracker_free, ((*(int*)(lst_tracker_free + 8))), ((*(int*)lst_tracker_free) & -8), ((*(int*)lst_current) & 1));
+		break;
       }
-      printf("IF in while ended, checking lst_tracker_free == lst_start_free\n");
+	  /*if ((*(int*)lst_tracker_free & -8) == newsize) // Size is exactly same.
+	  {
+		lst_current = lst_tracker_free;
+		*(int*)lst_tracker_free = ((*(int*)lst_tracker_free) | 1); // Set the header of current block.
+		*(int*)(lst_tracker_free + newsize - 8) = (*(int*)lst_tracker_free); // Set the footer of current block.(Same as header)
+		int prev_size = (*(int*)(lst_tracker_free - 8)) & -8;
+		if (lst_tracker_free != lst_start) // If current block is not the lst_start, we have to set the prev block(neighboring)'s header and footer to recognize current block as allocated. If current block is the lst_start, we don't have to modify anything.
+		{
+		  *(int*)(lst_tracker_free - prev_size) = (*(int*)(lst_tracker_free - prev_size)) | 2;
+		  *(int*)(lst_tracker_free - 8) = (*(int*)(lst_tracker_free - 8)) | 2;
+	  	}
+	  	if ((void*)(*(int*)(lst_tracker_free + 8)) != NULL) // Set the prev pointer of next free block to point to prev block of current block.
+	  	{
+		  *(int*)((void*)(*(int*)(lst_tracker_free + 8)) + 12) = *(int*)(lst_tracker_free + 12);
+	  	}
+	  	if ((void*)(*(int*)(lst_tracker_free + 12)) != NULL) // Set the next pointer of prev free block to point to next block of current block.
+	  	{
+		  *(int*)((void*)(*(int*)(lst_tracker_free + 12)) + 8) = *(int*)(lst_tracker_free + 8);
+	  	}
+
+	  	if (lst_current == lst_start_free) // If current block is previously the first free block, set the lst_start_free to next free block.
+	  	{
+		  if ((void*)(*(int*)(lst_tracker_free + 8)) != NULL)
+		  {
+		  	lst_start_free = (void*)(*(int*)(lst_tracker_free + 8));
+		  }
+		  else
+		  {
+		  	lst_start_free = NULL;
+		  }
+	  	}
+		allocated = 1;
+	  	//printf("Allocated using free block(Exact size) - lst_start_free : %p, located block : %p, located block size : %d, allocated : %d\n", lst_start_free, lst_tracker_free, ((*(int*)lst_tracker_free) & -8), ((*(int*)lst_current) & 1));
+		lst_tracker_free = (void*)(*(int*)(lst_tracker_free + 8));
+	  	break;
+	  }*/
+      //printf("IF in while ended, checking lst_tracker_free == lst_start_free\n");
       if (lst_tracker_free == lst_start_free)
       {
-	printf("lst_tracker_free == lst_start_free entered\n");
+	//printf("lst_tracker_free == lst_start_free entered\n");
 	if ((*(int*)(lst_tracker_free + 8)) != 0)
 	{
-	  printf("lst_stracker_Free == lst_start_free IF\n");
+	  //printf("lst_stracker_Free == lst_start_free IF\n");
 	  lst_tracker_free = ((void*)(*((int*)lst_tracker_free + 2)));
-	  printf("lst_tracker_free == lst_start_free - new lst_tracker_free value : %p\n", lst_tracker_free);
+	  //printf("lst_tracker_free == lst_start_free - new lst_tracker_free value : %p\n", lst_tracker_free);
 	}
 	else
 	{
@@ -251,7 +271,7 @@ void* mm_malloc(size_t size)
       }
 	  else
 	  {
-      printf("debug 4 - lst_start_free : %p, lst_tracker_free : %p, lst_end_free : %p, (*(int)(lst_tracker_free + 8)) : %x, free block size : %d\n", lst_start_free, lst_tracker_free, lst_end_free, (*(int*)(lst_tracker_free + 8)), (*(int*)lst_tracker_free)&-8);
+      //printf("debug 4 - lst_start_free : %p, lst_tracker_free : %p, lst_end_free : %p, (*(int)(lst_tracker_free + 8)) : %x, free block size : %d\n", lst_start_free, lst_tracker_free, lst_end_free, (*(int*)(lst_tracker_free + 8)), (*(int*)lst_tracker_free)&-8);
       if (((*(int*)(lst_tracker_free + 8)) == 0) || ((*(int*)(lst_tracker_free + 8)) == (int)lst_start_free))
       {
 	break;
@@ -262,7 +282,7 @@ void* mm_malloc(size_t size)
 	  }
 	  }
     }
-    printf("debug 5\n");
+    //printf("debug 5\n");
     if (!allocated) // Block is not allocated while tracking block list.
     {
       lst_current = mem_sbrk(newsize);
@@ -275,7 +295,7 @@ void* mm_malloc(size_t size)
       (*(int*)(lst_current - 8)) = ((*(int*)(lst_current - 8)) | 2); // Set the previous block's footer to recognize its next block(current) as allocated.
       (*(int*)(lst_current - ((*(int*)(lst_current - 8)) & -8))) = ((*(int*)(lst_current - 8)) | 2); // Set the previous block's header to recognize its next block(current) as allocated.
       lst_end = lst_current + newsize;
-      printf("mm_malloc - new allocation - lst_current : %p, lst_end : %p, block size : %d, allocated : %d\n", lst_current, lst_end, (*(int*)lst_current), ((*(int*)lst_current) & 1));
+      //printf("mm_malloc - new allocation - lst_current : %p, lst_end : %p, block size : %d, allocated : %d\n", lst_current, lst_end, (*(int*)lst_current), ((*(int*)lst_current) & 1));
 
     }
   }
@@ -293,14 +313,21 @@ void* mm_malloc(size_t size)
  */
 void mm_free(void *ptr)
 {
-  printf("mm_free - block size : %d\n", ((*(int*)(ptr - 8)) & -8));
+  // For debuging.
+  //printf("FREE - %d\n", (free_counter++));
+  //printf("mm_free - block size : %d\n", ((*(int*)(ptr - 8)) & -8));
   ptr = ptr - 8;
-  printf("mm_free check : current block allocated : %d, ptr == lst_start : %d, current block is not end : %d, next block is allocated : %d\n", ((*(int*)ptr & 1) == 1), (ptr == lst_start), ((ptr + (*(int*)ptr & -8)) != lst_end), (((*(int*)(ptr + (*(int*)ptr & -8))) & 1) == 1));
+  //printf("mm_free check : current block allocated : %d, ptr == lst_start : %d, current block is not end : %d, next block is allocated : %d\n", ((*(int*)ptr & 1) == 1), (ptr == lst_start), ((ptr + (*(int*)ptr & -8)) != lst_end), (((*(int*)(ptr + (*(int*)ptr & -8))) & 1) == 1));
+  //printf("mm_free check : prev block header : %d, current block header : %d\n", (*(int*)(ptr - 8) & 3), (*(int*)ptr & 3)); 
   free_list_print(lst_start_free);
+  if ((*(int*)ptr & 1) != 1)
+  {
+    return;
+  }
   /* YOUR IMPLEMENTATION */
   if ((((*(int*)ptr) & 3) == 3) && (((*(int*)(ptr - 8)) & 3) == 3) && ((ptr + (*(int*)ptr & -8)) != lst_end) && (ptr != lst_start)) // Case 1 : block next and prev are all allocated.
   {
-    printf("mm_free case1 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
+    //printf("mm_free case1 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
     int prev_size = ((*(int*)(ptr - 8)) & -8);
     int current_size = ((*(int*)ptr) & -8);
     (*(int*)(ptr - 8)) = ((*(int*)(ptr - 8)) & -3); // Set the footer of previous block so that it could recognize its next block(current) as freed.
@@ -318,7 +345,7 @@ void mm_free(void *ptr)
   }
   else if ((((*(int*)ptr) & 3) == 3) && (((*(int*)(ptr - 8)) & 3) == 2) && ((ptr + (*(int*)ptr & -8)) != lst_end) && (ptr != lst_start)) // Case 2 : block next is allocated and block prev is free.
   {
-    printf("mm_free case2 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
+    //printf("mm_free case2 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
     // In this case, previous block will be coalesced, hence setting footer of it is not needed.
     int prev_size = ((*(int*)(ptr - 8)) & -8);
     int current_size = ((*(int*)ptr) & -8);
@@ -336,7 +363,7 @@ void mm_free(void *ptr)
 		*((int*)(*(int*)(lst_start_free + 12)) + 2) = 0;
 	  }
 	}
-	printf("mm_free case2 - Debug1\n");
+	//printf("mm_free case2 - Debug1\n");
 	if (*(int*)(lst_start_free + 8) != 0)
 	{
 	  if (*(int*)(lst_start_free + 12) != 0)
@@ -348,7 +375,7 @@ void mm_free(void *ptr)
 		*((int*)(*(int*)(lst_start_free + 8)) + 3) = 0;
 	  }
 	}
-	printf("mm_free case2 - Debug2\n");
+	//printf("mm_free case2 - Debug2\n");
 	if (lst_free_root_temp >= ptr - prev_size && lst_free_root_temp <= ptr) // In this case, since the prev pointer of lst_free_root_temp's next free block(if exists) is already pointing at current(merged) block, we don't have to modify it.
 	{
 	  /*if (*(int*)(lst_free_root_temp + 8) != 0)
@@ -373,18 +400,18 @@ void mm_free(void *ptr)
 		*(int*)(lst_free_root_temp + 12) = (int)lst_start_free; // Set the prev pointer of next free block to point to the currently freed block.
 	  }
 	}
-    printf("mm_free case2 - Debug3\n");
+    //printf("mm_free case2 - Debug3\n");
 	*(int*)(lst_start_free + 12) = 0;
 	/*if (lst_free_root_temp != NULL)
 	{
 	  *(int*)(lst_free_root_temp + 12) = (int)lst_start_free; // Set the prev pointer of next free block to point to the currently freed block.
 	}*/
     (*(int*)(ptr + current_size - 8)) = ((prev_size + current_size) & -8) + 2; // Set the footer of freed block that it should recognized as ptr is free and its next block is allocated.
-    printf("mm_free case2 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
+    //printf("mm_free case2 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
   }
   else if ((((*(int*)ptr) & 3) == 1) && (((*(int*)(ptr - 8)) & 3) == 3) && ((ptr + (*(int*)ptr & -8)) != lst_end) && (ptr != lst_start)) // Case 3 : block next is free and block prev is allocated.
   {
-    printf("mm_free case3 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
+    //printf("mm_free case3 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
     // In this case, next block will be coalesced
     int next_size = ((*(int*)(ptr + ((*(int*)ptr) & -8))) & -8);
     int current_size = ((*(int*)ptr) & -8);
@@ -432,27 +459,27 @@ void mm_free(void *ptr)
 	}
 	/*if (lst_free_root_temp != NULL)
 	{
-	  printf("mm_free case3 : lst_free_root_temp : %p\n", lst_free_root_temp);
+	  //printf("mm_free case3 : lst_free_root_temp : %p\n", lst_free_root_temp);
       *(int*)(lst_free_root_temp + 12) = (int)lst_start_free;  // Set the prev pointer of next free block to point to currently freed block.
 	}*/
     *(int*)(lst_start_free + 12) = 0;
     (*(int*)ptr) = ((next_size + current_size) & -8) + ((*(int*)(ptr + current_size)) & 3); // Set the header of current block(after coalesced).
     (*(int*)(ptr + next_size + current_size - 8)) = ((next_size + current_size) & -8) + ((*(int*)(ptr + current_size)) & 3); // Set the footer of current block(after coalesced).
-    printf("mm_free case3 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
+    //printf("mm_free case3 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
 	free_list_print(lst_start_free);
   }
   
   else if ((((*(int*)ptr) & 3) == 1) && (((*(int*)(ptr - 8)) & 3) == 2) && ((ptr + (*(int*)ptr & -8)) != lst_end) && (ptr != lst_start)) // Case 4 : block next and prev are both free.
   {
-    printf("mm_free case4 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
+    //printf("mm_free case4 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
     // In this case, prev and next block will be both coalesced.
     int prev_size = ((*(int*)(ptr - 8)) & -8);
     int current_size = ((*(int*)ptr) & -8);
     int next_size = ((*(int*)(ptr + current_size)) & -8);
-    printf("mm_free case4 debug1\n");
+    //printf("mm_free case4 debug1\n");
     (*(int*)(ptr - prev_size)) = ((prev_size + current_size + next_size) & -8) + ((*(int*)(ptr + current_size)) & 3); // Set the header of prev block.
     (*(int*)(ptr + current_size + next_size - 8)) = ((prev_size + current_size + next_size) & -8) + ((*(int*)(ptr + current_size)) & 3); // Set the footer of next block.
-    printf("mm_free case4 debug2\n");
+    //printf("mm_free case4 debug2\n");
     lst_free_root_temp = lst_start_free;
     //lst_start_free = (ptr - (*(int*)(ptr - prev_size)));
     lst_start_free = (ptr - prev_size);
@@ -503,7 +530,7 @@ void mm_free(void *ptr)
 	}
 
 
-    printf("mm_free case4 debug3\n");
+    //printf("mm_free case4 debug3\n");
 	/*if ((lst_start_free >= ptr && lst_start_free <= ptr + current_size + next_size) || (lst_start_free >= ptr - prev_size && lst_start_free <= ptr + current_size))
 	{
 	  *(int*)(lst_start_free + 8) = */
@@ -555,11 +582,11 @@ void mm_free(void *ptr)
 	  }
 	}
     *(int*)(lst_start_free + 12) = 0;
-    printf("mm_free case4 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
+    //printf("mm_free case4 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
   }
   else if ((((*(int*)ptr) & 3) == 1) && (((*(int*)(ptr - 8)) & 3) == 3) && ((ptr + (*(int*)ptr & -8)) == lst_end) && (ptr != lst_start)) // Case 5 : block prev is allocated and ptr is end of list.
   {
-    printf("mm_free case5 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
+    //printf("mm_free case5 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
     int current_size = ((*(int*)ptr) & -8);
     int prev_size = ((*(int*)(ptr - 8)) & -8);
     lst_free_root_temp = lst_start_free;
@@ -574,11 +601,11 @@ void mm_free(void *ptr)
 	{
 	  *(int*)(lst_free_root_temp + 12) = (int)lst_start_free;
 	}
-    printf("Free check : %d, prev_block allocated : %d\n", (*(int*)ptr)&1, (*(int*)(ptr - prev_size) & 1));
+    //printf("Free check : %d, prev_block allocated : %d\n", (*(int*)ptr)&1, (*(int*)(ptr - prev_size) & 1));
   }
   else if ((((*(int*)ptr) & 3) == 1) && (((*(int*)(ptr - 8)) & 3) == 2) && ((ptr + (*(int*)ptr & -8)) == lst_end) && (ptr != lst_start)) // Case 6 : block prev is free and ptr is end of list.
   {
-    printf("mm_free case6 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
+    //printf("mm_free case6 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
     int current_size = ((*(int*)ptr) & -8);
     int prev_size = ((*(int*)(ptr - 8)) & -8);
     lst_free_root_temp = lst_start_free;
@@ -620,7 +647,8 @@ void mm_free(void *ptr)
       {
         if ((void*)(*(int*)(lst_free_root_temp + 8)) != NULL) // If next pointer of prev block is not null, set the current(merged) block's next pointer to that value. Since that next free block's prev pointer is already pointing to prev block, we don't have to modify it.
         {
-          *(int*)(lst_start_free + 8) = *(int*)(*(int*)(lst_free_root_temp + 8) + 8);
+          //*(int*)(lst_start_free + 8) = *(int*)(*(int*)(lst_free_root_temp + 8) + 8);
+		  *(int*)(lst_start_free + 8) = *(int*)(lst_free_root_temp + 8);
 		  *(int*)((void*)(*(int*)(lst_free_root_temp + 8)) + 12) = (int)lst_start_free;
         }
         else // Next pointer of prev block is null.
@@ -636,11 +664,11 @@ void mm_free(void *ptr)
     }
     *(int*)(lst_start_free + 12) = 0; // Set the prev pointer of current(merged) block to NULL.
     
-    printf("mm_free case6 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
+    //printf("mm_free case6 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
   }
   else if (((*(int*)ptr & 1) == 1) && (ptr == lst_start) && ((ptr + (*(int*)ptr & -8)) != lst_end) && (((*(int*)(ptr + (*(int*)ptr & -8))) & 1) == 1))  // Case 7 : ptr is start of list and next block is allocated.
   {
-    printf("mm_free case7 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
+    //printf("mm_free case7 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
     int current_size = ((*(int*)ptr) & -8);
     lst_free_root_temp = lst_start_free;
     lst_start_free = ptr;
@@ -656,12 +684,12 @@ void mm_free(void *ptr)
   }
   else if (((*(int*)ptr & 3) == 1) && (ptr == lst_start) && ((ptr + (*(int*)ptr & -8)) != lst_end) && (((*(int*)(ptr + (*(int*)ptr & -8))) & 1) == 0)) // Case 8 :ptr is start of list and next block is free.
   {
-    printf("mm_free case8 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
+    //printf("mm_free case8 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
     int current_size = ((*(int*)ptr) & -8);
     int next_size = ((*(int*)(ptr + current_size)) & -8);
 	lst_free_root_temp = lst_start_free;
     lst_start_free = ptr;
-	printf("mm_free case8 - Debug 1\n");
+	//printf("mm_free case8 - Debug 1\n");
 	if (*(int*)(lst_start_free + current_size + 12) != 0)
 	{
 	  if (*(int*)(lst_start_free + current_size + 8) != 0)
@@ -673,21 +701,21 @@ void mm_free(void *ptr)
 		*((int*)(*(int*)(lst_start_free + current_size + 12)) + 2) = 0;
 	  }
 	}
-	printf("mm_free case8 - Debug 2\n");
+	//printf("mm_free case8 - Debug 2\n");
 	if (*(int*)(lst_start_free + current_size + 8) != 0)
 	{
-	  printf("mm_free case8 - Debug 2-1\n");
+	  //printf("mm_free case8 - Debug 2-1\n");
       if (*(int*)(lst_start_free + current_size + 12) != 0)
 	  {
 		*((int*)(*(int*)(lst_start_free + current_size + 8)) + 3) = *(int*)(lst_start_free + current_size + 12);
 	  }
 	  else
 	  {
-	    printf("mm_free case8 - Debug 2-2, Value of *(int*)(lst_start_free + current_size + 8) : %x\n", *(int*)(lst_start_free + current_size + 8));
+	    //printf("mm_free case8 - Debug 2-2, Value of *(int*)(lst_start_free + current_size + 8) : %x\n", *(int*)(lst_start_free + current_size + 8));
 		*((int*)(*(int*)(lst_start_free + current_size + 8)) + 3) = 0;
 	  }
 	}
-	printf("mm_free case8 - Debug 3\n");
+	//printf("mm_free case8 - Debug 3\n");
     *(int*)ptr = (current_size + next_size) + (*(int*)(ptr + current_size) & 2); // Set the header of coalesced block.
     *(int*)(ptr + current_size + next_size - 8) = (current_size + next_size) + (*(int*)(ptr + current_size) & 2); // Set the footer of coalesced block.
 	if (lst_free_root_temp >= ptr && lst_free_root_temp <= ptr + current_size + next_size) // When the next block(free) is the starting free block.
@@ -711,11 +739,11 @@ void mm_free(void *ptr)
 	  *(int*)(lst_free_root_temp + 12) = (int)lst_start_free;
 	}*/
     *(int*)(ptr + 12) = 0;
-    printf("mm_free case8 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
+    //printf("mm_free case8 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
   }
   else // Case 9 : ptr is the only block allocated.
   {
-    printf("mm_free case9 - ptr : %p, lst_start_free : %p, lst_end_Free : %p\n", ptr, lst_start_free, lst_end_free);
+    //printf("mm_free case9 - ptr : %p, lst_start_free : %p, lst_end_Free : %p\n", ptr, lst_start_free, lst_end_free);
     int current_size = ((*(int*)ptr) & -8);
     lst_start_free = ptr;
     *(int*)ptr = current_size + 0;
@@ -743,14 +771,14 @@ void* mm_realloc(void *ptr, size_t t)
  */
 void mm_exit(void)
 {
-  printf("mm_exit entered - lst_start : %p, lst_end : %p\n", lst_start, lst_end);
+  //printf("mm_exit entered - lst_start : %p, lst_end : %p\n", lst_start, lst_end);
   for(lst_tracker = lst_start; lst_tracker < lst_end; lst_tracker = lst_tracker + (*(int*)lst_tracker & -8))
   {
-    printf("mm_exit for loop - lst_tracker : %p, lst_start : %p, lst_end : %p, current block allocated? : %d\n", lst_tracker, lst_start, lst_end, ((*(int*)lst_tracker & 1)));
-    printf("First free list freed?(0 : freed) : %d, free block size : %d\n", (*(int*)lst_start_free & 1), (*(int*)lst_start_free & -8));
+    //printf("mm_exit for loop - lst_tracker : %p, lst_start : %p, lst_end : %p, current block allocated? : %d\n", lst_tracker, lst_start, lst_end, ((*(int*)lst_tracker & 1)));
+    //printf("First free list freed?(0 : freed) : %d, free block size : %d\n", (*(int*)lst_start_free & 1), (*(int*)lst_start_free & -8));
     if ((*(int*)lst_tracker & 1) == 1)
     {
-      printf("mm_exit - now freeing the unfreed block - lst_tracker : %p, block size : %d\n", lst_tracker, (*(int*)lst_tracker & -8));
+      //printf("mm_exit - now freeing the unfreed block - lst_tracker : %p, block size : %d\n", lst_tracker, (*(int*)lst_tracker & -8));
       mm_free((void*)((char*)lst_tracker + 8));
     }
   }
