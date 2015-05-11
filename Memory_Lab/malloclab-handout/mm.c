@@ -359,46 +359,473 @@ void* sibling (void* ptr) // Finds the sibling and return it. If sibiling does n
 	}
 }
 
-
-
-/*int double_free_checker (void* ptr) // Not double free : 1, Double free : 0
+void delete_one_child(void* ptr);
+void delete_case1(void* ptr);
+void delete_case2(void* ptr);
+void delete_case3(void* ptr);
+void delete_case4(void* ptr);
+void delete_case5(void* ptr);
+void delete_case6(void* ptr);
+void replace_node(void* ptr1, void* ptr2);
+void* replace_node_ptr1_parent_temp;
+void* replace_node_ptr1_left_child_temp;
+void* replace_node_ptr1_right_child_temp;
+void* replace_node_ptr2_child_temp;
+void* replace_node_ptr2_parent_temp;
+void* copy_node_ptr1_parent_temp;
+void* copy_node_ptr1_left_child_temp;
+void* copy_node_ptr1_right_child_temp;
+void copy_node(void* ptr1, void* ptr2) // Just exchange the two nodes.
 {
-	void* tracker;
-	if (lst_start == NULL)
+	if (ptr1 == NULL || ptr2 == NULL)
 	{
-		return 1; // No block is freed.
+		return;
 	}
 	else
 	{
-		tracker = lst_start;
-		while (tracker < lst_end)
+		copy_node_ptr1_parent_temp = parent(ptr1);
+		copy_node_ptr1_left_child_temp = left_child(ptr1);
+		copy_node_ptr1_right_child_temp = right_child(ptr1);
+		*(int*)(ptr1 + 4) = (int)(left_child(ptr2));
+		*(int*)(ptr1 + 8) = (int)(parent(ptr2));
+		*(int*)(ptr1 + (get_size(ptr1)) - 8) = (int)(right_child(ptr2));
+		*(int*)(ptr2 + 4) = (int)(copy_node_ptr1_left_child_temp);
+		*(int*)(ptr2 + 8) = (int)(copy_node_ptr1_parent_temp);
+		*(int*)(ptr2 + (get_size(ptr2)) - 8) = (int)(copy_node_ptr1_right_child_temp);
+	}
+}
+
+void replace_node(void* ptr1, void* ptr2) // ptr2 goes into ptr1's place and ptr1 is removed from tree.
+{
+	if (ptr1 == NULL || ptr2 == NULL)
+	{
+		return;
+	}
+	else
+	{
+		int pred = 0;
+		int succ = 0;
+		replace_node_ptr1_parent_temp = parent(ptr1);
+		replace_node_ptr1_left_child_temp = left_child(ptr1);
+		replace_node_ptr1_right_child_temp = right_child(ptr1);
+		replace_node_ptr2_parent_temp = parent(ptr2);
+		if (left_child(ptr2) != NULL) // Inorder predecessor.
 		{
-			if (tracker <= ptr)
+			replace_node_ptr2_child_temp = left_child(ptr2);
+			pred = 1;
+		}
+		else // Inorder successor.
+		{
+			replace_node_ptr2_child_temp = right_child(ptr2);
+			succ = 1;
+		}
+		*(int*)(ptr1 + 4) = 0;
+		*(int*)(ptr1 + 8) = 0;
+		*(int*)(ptr1 + (get_size(ptr1)) - 8) = 0;
+		*(int*)(ptr2 + 4) = (int)(replace_node_ptr1_left_child_temp);
+		*(int*)(ptr2 + 8) = (int)(replace_node_ptr1_parent_temp);
+		*(int*)(ptr2 + (get_size(ptr2)) - 8) = (int)(replace_node_ptr1_right_child_temp);
+		if (replace_node_ptr2_parent_temp == ptr1) // Successor or predecessor's parent is ptr1. 
+		{
+			if (pred)
 			{
-				tracker = tracker + (*(int*)tracker & -8);
+				*(int*)(ptr2 + 4) = (int)(replace_node_ptr2_child_temp);
+				*(int*)(replace_node_ptr2_child_temp + 8) = (int)ptr2;
 			}
-			else
+			else if (succ)
 			{
-				tracker = tracker - (*(int*)tracker & -8);
-				if (tracker == ptr)
-				{
-					if ((*(int*)tracker & 1) == 0)
-					{
-						return 0; // Valid pointer and double free
-					}
-					else
-					{
-						return 1; // Valid pointer and not double free - OK to free
-					}
-				}
-				else
-				{
-					return 0; // Unvalid pointer
-				}
+				*(int*)(ptr2 + (get_size(ptr2)) - 8) = (int)(replace_node_ptr2_child_temp);
+				*(int*)(replace_node_ptr2_child_temp + 8) = (int)ptr2;
+			}
+		}
+		else // Successor or predecossor's parent is not ptr1. Ordinary case.
+		{
+			if (pred)
+			{
+				*(int*)(replace_node_ptr2_parent_temp + (get_size(replace_node_ptr2_parent_temp)) - 8) = (int)(replace_node_ptr2_child_temp);
+				*(int*)(replace_node_ptr2_child_temp + 8) = (int)replace_node_ptr2_parent_temp;
+			}
+			else if (succ)
+			{
+				*(int*)(replace_node_ptr2_parent_temp + 4) = (int)(replace_node_ptr2_child_temp);
+				*(int*)(replace_node_ptr2_child_temp + 8) = (int)replace_node_ptr2_parent_temp;
 			}
 		}
 	}
-}*/
+}
+void* delete_one_child_temp;
+void* delete_one_child_parent_temp;
+void* delete_one_child_parent_temp_freeing;
+void delete_one_child(void* ptr)
+{
+	// Assumption : ptr should not have two children.
+	if (ptr == NULL) // Invalid case.
+	{
+		return;
+	}
+	else
+	{
+		if ((left_child(ptr) == NULL) && (right_child(ptr) != NULL)) // Left child exists.
+		{
+			delete_one_child_temp = right_child(ptr);
+		}
+		else if ((left_child(ptr) != NULL) && (right_child(ptr) == NULL)) // Right child exists.
+		{
+			delete_one_child_temp = left_child(ptr);
+		}
+		else // No child exists.
+		{
+			if (parent(ptr) == NULL) // ptr is root node.
+			{
+				tree_root = NULL;
+			}
+			else // ptr is not root.
+			{
+				delete_one_child_parent_temp = parent(ptr);
+				if (left_child(delete_one_child_parent_temp) == ptr) // ptr is left child of parent.
+				{
+					*(int*)(delete_one_child_parent_temp + 4) = 0; // Set left child of ptr's parent as NULL.
+				}
+				else // ptr is right child of parent.
+				{
+					*(int*)(delete_one_child_parent_temp + (get_size(delete_one_child_parent_temp)) - 8) = 0; // Set right child of ptr's parent as NULL.
+				}
+				*(int*)(ptr + 8) = 0; // Set the parent of ptr as NULL.
+			}
+			return;
+		}
+		replace_node(ptr, delete_one_child_temp); // Change the node ptr and the existing child.
+		if (get_color(ptr) == 0)
+		{
+			if (get_color(delete_one_child_temp) == 1)
+			{
+				color_black(delete_one_child_temp);
+			}
+			else
+			{
+				tree_root = delete_one_child_temp;
+				delete_case1(delete_one_child_temp);
+			}
+		}
+		// Deleting ptr is done at replace_node.(Set all pointers to NULL)
+	}
+}
+void* find_inorder_pred_res;
+void* find_inorder_pred(void* ptr)
+{
+	if (ptr == NULL) // Invalid case
+	{
+		return NULL;
+	}
+	else
+	{
+		if (left_child(ptr) == NULL) // Left child of ptr is NULL. - There is no inorder predecessor.
+		{
+			return NULL;
+		}
+		else
+		{
+			find_inorder_pred_res = left_child(ptr); // The default inorder predecessor is left child of ptr.
+			while(right_child(find_inorder_pred_res) != NULL) // If left child of ptr is not the right most node of left child, Search the rigntmost.
+			{
+				find_inorder_pred_res = right_child(find_inorder_pred_res);
+			}
+			return find_inorder_pred_res;
+		}
+	}
+}
+void* find_inorder_succ_res;
+void* find_inorder_succ(void* ptr)
+{
+	if (ptr == NULL) // Invalid case
+	{
+		return NULL;
+	}
+	else
+	{
+		if (right_child(ptr) == NULL) // Right child of ptr is NULL. - There is no inorder successor.
+		{
+			return NULL;
+		}
+		else
+		{
+			find_inorder_succ_res = right_child(ptr); // The default inorder successor is right child of ptr.
+			while(right_child(find_inorder_succ_res) != NULL)
+			{
+				find_inorder_succ_res = left_child(find_inorder_succ_res);
+			}
+			return find_inorder_succ_res;
+		}
+	}
+}
+void* delete_inorder_pred_temp;
+void* delete_inorder_succ_temp;
+void delete(void* ptr)
+{
+	if (ptr == NULL) // Invalid case.
+	{
+		return;
+	}
+	else
+	{
+		if ((parent(ptr) == NULL) && (left_child(ptr) == NULL) && (right_child(ptr) == NULL)) // Case 1 : ptr is root and only node.
+		{
+			tree_root = NULL;
+			return;
+		}
+		else if ((parent(ptr) == NULL) && (left_child(ptr) == NULL) && (right_child(ptr) != NULL)) // Case 2 : ptr is root and left child is NULL.
+		{
+			tree_root = right_child(ptr);
+			delete_one_child(ptr);
+			return;
+		}
+		else if ((parent(ptr) == NULL) && (right_child(ptr) == NULL) && (left_child(ptr) != NULL)) // Case 3 : ptr is root and right child is NULL.
+		{
+			tree_root = left_child(ptr);
+			delete_one_child(ptr);
+			return;
+		}
+		else if ((parent(ptr) == NULL) && (right_child(ptr) != NULL) && (left_child(ptr) != NULL)) // Case 4 : ptr is root and left, right are not NULL.
+		{
+			delete_inorder_pred_temp = find_inorder_pred(ptr);
+			copy_node(ptr, delete_inorder_pred_temp);
+			tree_root = delete_inorder_pred_temp;
+			delete_one_child(ptr);
+			return;
+		}
+		else if ((right_child(ptr) == NULL) && (left_child(ptr) == NULL)) // Case 5 : ptr is not root and has no child.
+		{
+			delete_one_child(ptr);
+			return;
+		}
+		else if ((right_child(ptr) != NULL) && (left_child(ptr) == NULL)) // Case 6 : ptr is not root and has right child.
+		{
+			delete_one_child(ptr);
+			return;
+		}
+		else if ((right_child(ptr) == NULL) && (left_child(ptr) != NULL)) // Case 7 : ptr is not root and has left child.
+		{
+			delete_one_child(ptr);
+			return;
+		}
+		else // Case 8 : ptr is not root and has both child.
+		{
+			delete_inorder_pred_temp = find_inorder_pred(ptr);
+			copy_node(ptr, delete_inorder_pred_temp);
+			delete_one_child(ptr);
+			return;
+		}
+	}
+}
+
+void delete_case1(void* ptr) // If ptr is root, done.
+{
+	if (parent(ptr) != NULL)
+	{
+		delete_case2(ptr);
+	}
+}
+void* delete_case2_sibling;
+void delete_case2(void* ptr)
+{
+	delete_case2_sibling = sibling(ptr);
+	int color_sibling = -1;
+	if (delete_case2_sibling == NULL)
+	{
+		color_sibling = 0;
+	}
+	else
+	{
+		color_sibling = get_color(delete_case2_sibling);
+	}
+	if (color_sibling == 1)
+	{
+		color_red(parent(ptr));
+		color_black(delete_case2_sibling); // If color_sibling == 1, that implies existence of delete_case2_sibling.
+		if (ptr == (left_child(parent(ptr))))
+		{
+			left_rotation(parent(ptr));
+		}
+		else
+		{
+			right_rotation(parent(ptr));
+		}
+	}
+	delete_case3(ptr);
+}
+void* delete_case3_sibling;
+void delete_case3(void* ptr)
+{
+	delete_case3_sibling = sibling(ptr);
+	int color_sibling = -1; // Color of sibling. Exists and black - 0, NULL - 0, Exists and red - 1
+	if (delete_case3_sibling == NULL)
+	{
+		color_sibling = 0;
+	}
+	else
+	{
+		color_sibling = get_color(delete_case3_sibling);
+	}
+	if ((get_color(parent(ptr)) == 0) && (color_sibling == 0)) // First two conditions.
+	{
+		if (delete_case3_sibling == NULL) // Color of sibling is black, but it is NULL leaf of parent.
+		{
+			delete_case4(ptr);
+			return;
+		}
+		if ((left_child(delete_case3_sibling) == NULL) && (right_child(delete_case3_sibling) == NULL)) // if sibling has no children, their children are NULL, but thier color is black.
+		{
+			color_red(delete_case3_sibling);
+			delete_case1(parent(ptr));
+		}
+		else if ((left_child(delete_case3_sibling) == NULL) && (get_color(right_child(delete_case3_sibling)) == 0)) // their is no left child(left child color - black), right child exists and color is black.
+		{
+			color_red(delete_case3_sibling);
+			delete_case1(parent(ptr));
+		}
+		else if ((get_color(left_child(delete_case3_sibling)) == 0) && (right_child(delete_case3_sibling) == NULL)) // There is no right child(right child color - black), left child exists and color is black.
+		{
+			color_red(delete_case3_sibling);
+			delete_case1(parent(ptr));
+		}
+		else if ((get_color(left_child(delete_case3_sibling)) == 0) && (get_color(right_child(delete_case3_sibling)) == 0)) // There are two children and both color is black.
+		{
+			color_red(delete_case3_sibling);
+			delete_case1(parent(ptr));
+		}
+		else
+		{
+			delete_case4(ptr);
+		}
+	}
+}
+void* delete_case4_sibling;
+void delete_case4(void* ptr)
+{
+	delete_case4_sibling = sibling(ptr);
+	int color_sibling = -1;
+	if (delete_case4_sibling == NULL)
+	{
+		color_sibling = 0;
+	}
+	else
+	{
+		color_sibling = get_color(delete_case4_sibling);
+	}
+	if ((get_color(parent(ptr)) == 1) & (color_sibling == 0))
+	{
+		if (delete_case4_sibling == NULL)
+		{
+			delete_case5(ptr);
+			return;
+		}
+		if ((left_child(delete_case4_sibling) == NULL) && (right_child(delete_case4_sibling) == NULL))
+		{
+			color_red(delete_case4_sibling);
+			color_black(parent(ptr));
+		}
+		else if ((left_child(delete_case4_sibling) == NULL) && (get_color(right_child(delete_case4_sibling)) == 0))
+		{
+			color_red(delete_case4_sibling);
+			color_black(parent(ptr));
+		}
+		else if ((get_color(left_child(delete_case4_sibling)) == 0) && (right_child(delete_case4_sibling) == NULL))
+		{
+			color_red(delete_case4_sibling);
+			color_black(parent(ptr));
+		}
+		else if ((get_color(left_child(delete_case4_sibling)) == 0) && (get_color(right_child(delete_case4_sibling)) == 0))
+		{
+			color_red(delete_case4_sibling);
+			color_black(parent(ptr));
+		}
+		else
+		{
+			delete_case5(ptr);
+		}
+	}
+}
+void* delete_case5_sibling;
+void delete_case5(void* ptr)
+{
+	delete_case5_sibling = sibling(ptr);
+	int color_sibling = -1; // Get the color of sibling to make no problem when sibling does not exists.(NULL leaf)
+	if (delete_case5_sibling == NULL)
+	{
+		color_sibling = 0;
+	}
+	else
+	{
+		color_sibling = get_color(delete_case5_sibling);
+	}
+	// Get the color of sibling's left and right child to make no problem when they does not exist.(-1 : no sibling, 0 : NULL leaf or black node, 1 : red node)
+	int color_sibling_left = -1;
+	int color_sibling_right = -1;
+	if (delete_case5_sibling != NULL)
+	{
+		if (left_child(delete_case5_sibling) == NULL)
+		{
+			color_sibling_left = 0;
+		}
+		else
+		{
+			color_sibling_left = get_color(left_child(delete_case5_sibling));
+		}
+		
+		if (right_child(delete_case5_sibling) == NULL)
+		{
+			color_sibling_right = 0;
+		}
+		else
+		{
+			color_sibling_right = get_color(right_child(delete_case5_sibling));
+		}
+	}
+
+	if (color_sibling == 0)
+	{
+		if ((ptr == (left_child(parent(ptr)))) && (color_sibling_right == 0) && (color_sibling_left == 1))
+		{
+			color_red(delete_case5_sibling);
+			color_black(left_child(delete_case5_sibling));
+			right_rotation(delete_case5_sibling);
+		}
+		else if ((ptr == (right_child(parent(ptr)))) && (color_sibling_left == 0) && (color_sibling_right == 1))
+		{
+			color_red(delete_case5_sibling);
+			color_black(right_child(delete_case5_sibling));
+			left_rotation(delete_case5_sibling);
+		}
+	}
+	delete_case6(ptr);
+}
+void* delete_case6_sibling;
+void delete_case6(void* ptr)
+{
+	// Need to verify that sibling always exists and its left or right child(accordance with appropriate case) exists.
+	delete_case6_sibling = sibling(ptr);
+	int ptr_parent_color = get_color(parent(ptr));
+	if (ptr_parent_color == 0)
+	{
+		color_black(delete_case6_sibling);
+	}
+	else
+	{
+		color_red(delete_case6_sibling);
+	}
+	
+	if (ptr == (left_child(parent(ptr))))
+	{
+		color_black(right_child(delete_case6_sibling));
+		left_rotation(parent(ptr));
+	}
+	else
+	{
+		color_black(left_child(delete_case6_sibling));
+		right_rotation(parent(ptr));
+	}
+}
+				
 
 
 
