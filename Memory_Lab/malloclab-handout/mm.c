@@ -195,8 +195,10 @@ void insert(void* ptr, void* tree)
     insert_bst(ptr, tree);
     printf("tree root : %p\n", tree_root);
     inorder_traverse(tree_root);
-    printf("insert - Inorder traverse done!\n");
+    //printf("insert - Inorder traverse done!\n");
     insert_case1(ptr);
+    printf("After Insert : \n");
+    inorder_traverse(tree_root);
 }
 void insert_bst(void* ptr, void* tree)
 {
@@ -302,14 +304,23 @@ void left_rotation(void* ptr)
 	printf("left_rotation - start\n");
 	parent_temp_lr = parent(ptr);
 	new_root_temp = right_child(ptr);
-	if (ptr == (left_child(parent_temp_lr)))
+	if (parent_temp_lr != NULL)
 	{
-	    *(int*)(parent_temp_lr + 4) = (int)(new_root_temp);
+	    if (ptr == (left_child(parent_temp_lr)))
+	    {
+		*(int*)(parent_temp_lr + 4) = (int)(new_root_temp);
+	    }
+	    else
+	    {
+		*(int*)(parent_temp_lr + (get_size(parent_temp_lr)) - 4) = (int)(new_root_temp);
+	    }
 	}
-	else
+
+	if (parent(ptr) == NULL) // if ptr is root node, change root.
 	{
-	    *(int*)(parent_temp_lr + (get_size(parent_temp_lr)) - 4) = (int)(new_root_temp);
+	    tree_root = new_root_temp;
 	}
+
 	if (left_child(right_child(ptr)) != NULL)
 	{
 	    *(int*)((left_child(right_child(ptr))) + 8) = (int)ptr;
@@ -328,14 +339,44 @@ void right_rotation(void* ptr)
 {
 	printf("right_rotation - start\n");
 	parent_temp_rr = parent(ptr);
-	*(int*)(parent_temp_rr + 4) = (int)(right_child(ptr));
-	if (right_child(ptr) != NULL)
+	new_root_temp = left_child(ptr);
+	if (parent_temp_rr != NULL)
+	{
+	    if (ptr == (left_child(parent_temp_rr)))
+	    {
+		*(int*)(parent_temp_rr + 4) = (int)new_root_temp;
+	    }
+	    else
+	    {
+		*(int*)(parent_temp_rr + (get_size(parent_temp_rr)) - 4) = (int)new_root_temp;
+	    }
+	}
+
+	if (parent(ptr) == NULL) // if ptr is root node, change root.
+	{
+	    tree_root = new_root_temp;
+	}
+
+	if (right_child(new_root_temp) != NULL)
+	{
+	    *(int*)((right_child(new_root_temp)) + 8) = (int)ptr;
+	    *(int*)(ptr + 4) = (int)(right_child(new_root_temp));
+	}
+	else
+	{
+	    *(int*)(ptr + 4) = 0;
+	}
+	*(int*)(ptr + 8) = (int)new_root_temp;
+	*(int*)(new_root_temp + (get_size(new_root_temp)) - 4) = (int)ptr;
+	*(int*)(new_root_temp + 8) = (int)parent_temp_rr;
+	//*(int*)(parent_temp_rr + 4) = (int)(right_child(ptr));
+	/*if (right_child(ptr) != NULL)
 	{
 	    *(int*)((right_child(ptr)) + 8) = (int)parent_temp_rr;
 	}
 	*(int*)(ptr + (get_size(ptr)) - 4) = (int)parent_temp_rr;
 	*(int*)(ptr + 8) = *(int*)(parent_temp_rr + 8);
-	*(int*)(parent_temp_rr + 8) = (int)ptr;
+	*(int*)(parent_temp_rr + 8) = (int)ptr;*/
 	printf("right_rotation - done\n");
 }
 void* saved_p_ic4;
@@ -373,7 +414,7 @@ void insert_case4 (void* ptr)
 }
 void insert_case5 (void* ptr)
 {
-	printf("insert_case5 - ptr : %p, parent(ptr) : %p\n", ptr, parent(ptr));
+	printf("insert_case5 - ptr : %p, parent(ptr) : %p, grandparent(ptr) : %p\n", ptr, parent(ptr), grandparent(ptr));
 	color_black(parent(ptr));
 	color_red(grandparent(ptr));
 	if (ptr == (left_child(parent(ptr))))
@@ -645,21 +686,21 @@ void delete(void* ptr)
 		{
 			printf("delete - Case 1\n");
 			tree_root = NULL;
-			return;
+			//return;
 		}
 		else if ((parent(ptr) == NULL) && (left_child(ptr) == NULL) && (right_child(ptr) != NULL)) // Case 2 : ptr is root and left child is NULL.
 		{
 			printf("delete - Case 2\n");
 			tree_root = right_child(ptr);
 			delete_one_child(ptr);
-			return;
+			//return;
 		}
 		else if ((parent(ptr) == NULL) && (right_child(ptr) == NULL) && (left_child(ptr) != NULL)) // Case 3 : ptr is root and right child is NULL.
 		{
 			printf("delete - Case 3\n");
 			tree_root = left_child(ptr);
 			delete_one_child(ptr);
-			return;
+			//return;
 		}
 		else if ((parent(ptr) == NULL) && (right_child(ptr) != NULL) && (left_child(ptr) != NULL)) // Case 4 : ptr is root and left, right are not NULL.
 		{
@@ -668,25 +709,25 @@ void delete(void* ptr)
 			copy_node(ptr, delete_inorder_pred_temp);
 			tree_root = delete_inorder_pred_temp;
 			delete_one_child(ptr);
-			return;
+			//return;
 		}
 		else if ((right_child(ptr) == NULL) && (left_child(ptr) == NULL)) // Case 5 : ptr is not root and has no child.
 		{
 			printf("delete - Case 5\n");
 			delete_one_child(ptr);
-			return;
+			//return;
 		}
 		else if ((right_child(ptr) != NULL) && (left_child(ptr) == NULL)) // Case 6 : ptr is not root and has right child.
 		{
 			printf("delete - Case 6\n");
 			delete_one_child(ptr);
-			return;
+			//return;
 		}
 		else if ((right_child(ptr) == NULL) && (left_child(ptr) != NULL)) // Case 7 : ptr is not root and has left child.
 		{
 			printf("delete - Case 7\n");
 			delete_one_child(ptr);
-			return;
+			//return;
 		}
 		else // Case 8 : ptr is not root and has both child.
 		{
@@ -694,9 +735,11 @@ void delete(void* ptr)
 			delete_inorder_pred_temp = find_inorder_pred(ptr);
 			copy_node(ptr, delete_inorder_pred_temp);
 			delete_one_child(ptr);
-			return;
+			//return;
 		}
 	}
+	printf("After Delete : \n");
+	inorder_traverse(tree_root);
 }
 
 void delete_case1(void* ptr) // If ptr is root, done.
