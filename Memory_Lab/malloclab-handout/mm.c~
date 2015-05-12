@@ -461,101 +461,23 @@ void* replace_node_ptr2_parent_temp;
 void* copy_node_ptr1_parent_temp;
 void* copy_node_ptr1_left_child_temp;
 void* copy_node_ptr1_right_child_temp;
-void* copy_node_ptr2_parent_temp;
-void* copy_node_ptr2_left_child_temp;
-void* copy_node_ptr2_right_child_temp;
 void copy_node(void* ptr1, void* ptr2) // Just exchange the two nodes.
 {
-	printf("Before copy_node : ptr1 - %p, ptr2 - %p\n", ptr1, ptr2);
 	if (ptr1 == NULL || ptr2 == NULL)
 	{
 		return;
 	}
 	else
 	{
-		if (ptr1 == tree_root)
-		{
-			tree_root = ptr2;
-		}
-		else if (ptr2 == tree_root)
-		{
-			tree_root = ptr1;
-		}
 		copy_node_ptr1_parent_temp = parent(ptr1);
 		copy_node_ptr1_left_child_temp = left_child(ptr1);
 		copy_node_ptr1_right_child_temp = right_child(ptr1);
-		copy_node_ptr2_parent_temp = parent(ptr2);
-		copy_node_ptr2_left_child_temp = left_child(ptr2);
-		copy_node_ptr2_right_child_temp = right_child(ptr2);
-		// Exception 1 - ptr1's right child is ptr2.
-		if (ptr2 == (right_child(ptr1)))
-		{
-			copy_node_ptr1_right_child_temp = ptr1;
-			copy_node_ptr2_parent_temp = ptr2;
-		}
-		// Exception 2 - ptr1's left child is ptr2.
-		if (ptr2 == (left_child(ptr1)))
-		{
-			copy_node_ptr1_left_child_temp = ptr1;
-			copy_node_ptr2_parent_temp = ptr2;
-		}
-		// Exception 3 - ptr2's right child is ptr1.
-		if (ptr1 == (right_child(ptr2)))
-		{
-			copy_node_ptr2_right_child_temp = ptr2;
-			copy_node_ptr1_parent_temp = ptr1;
-		}
-		// Exception 4 - ptr2's left child is ptr1.
-		if (ptr1 == (left_child(ptr2)))
-		{
-			copy_node_ptr2_left_child_temp = ptr2;
-			copy_node_ptr1_parent_temp = ptr1;
-		}
-		// Ordinary case.
-		//if ((ptr2 != (right_child(ptr1))) && (ptr2 != (left_child(ptr1))) && (ptr1 != (right_child(ptr2))) && (ptr1 != (left_child(ptr2))))
-		//{
-			if (ptr1 == (left_child(copy_node_ptr1_parent_temp)))
-			{
-				*(int*)(copy_node_ptr1_parent_temp + 4) = (int)ptr2;
-			}
-			else if (ptr1 == (right_child(copy_node_ptr1_parent_temp)))
-			{
-				*(int*)(copy_node_ptr1_parent_temp + (get_size(copy_node_ptr1_parent_temp)) - 4) = (int)ptr2;
-			}
-			if (ptr2 == (left_child(copy_node_ptr2_parent_temp)))
-			{
-				*(int*)(copy_node_ptr2_parent_temp + 4) = (int)ptr1;
-			}
-			else if (ptr2 == (right_child(copy_node_ptr2_parent_temp)))
-			{
-				*(int*)(copy_node_ptr2_parent_temp + (get_size(copy_node_ptr2_parent_temp)) - 4) = (int)ptr1;
-			}
-		//}
-		if (copy_node_ptr1_left_child_temp != NULL)
-		{
-			*(int*)(copy_node_ptr1_left_child_temp + 8) = (int)ptr2;
-		}
-		if (copy_node_ptr1_right_child_temp != NULL)
-		{
-			*(int*)(copy_node_ptr1_right_child_temp + 8) = (int)ptr2;
-		}
-		if (copy_node_ptr2_left_child_temp != NULL)
-		{
-			*(int*)(copy_node_ptr2_left_child_temp + 8) = (int)ptr1;
-		}
-		if (copy_node_ptr2_right_child_temp != NULL)
-		{
-			*(int*)(copy_node_ptr2_right_child_temp + 8) = (int)ptr1;
-		}
-
-		*(int*)(ptr1 + 4) = (int)copy_node_ptr2_left_child_temp;
-		*(int*)(ptr1 + 8) = (int)copy_node_ptr2_parent_temp;
-		*(int*)(ptr1 + (get_size(ptr1)) - 4) = (int)copy_node_ptr2_right_child_temp;
+		*(int*)(ptr1 + 4) = (int)(left_child(ptr2));
+		*(int*)(ptr1 + 8) = (int)(parent(ptr2));
+		*(int*)(ptr1 + (get_size(ptr1)) - 4) = (int)(right_child(ptr2));
 		*(int*)(ptr2 + 4) = (int)(copy_node_ptr1_left_child_temp);
 		*(int*)(ptr2 + 8) = (int)(copy_node_ptr1_parent_temp);
 		*(int*)(ptr2 + (get_size(ptr2)) - 4) = (int)(copy_node_ptr1_right_child_temp);
-
-		printf("after copy_node : ptr1 : %p, ptr1 parent : %p, ptr1 left_child : %p, ptr1 right_child : %p, ptr2 : %p, ptr2 parent : %p, ptr2 left_child : %p, ptr2 right_child : %p\n", ptr1, parent(ptr1), left_child(ptr1), right_child(ptr1), ptr2, parent(ptr2), left_child(ptr2), right_child(ptr2));
 	}
 }
 
@@ -719,7 +641,7 @@ void delete_one_child(void* ptr)
 		{
 			color_child = 0;
 		}
-		printf("delete_one_child - easy cases - ptr : %p, get_color(ptr) : %d, color_child : %d\n", ptr, get_color(ptr), color_child);	
+		
 		if (get_color(ptr) == 1)
 		{
 			delete_one_child_parent_temp = parent(ptr);
@@ -727,86 +649,43 @@ void delete_one_child(void* ptr)
 			{
 				*(int*)(delete_one_child_parent_temp + 4) = 0;
 			}
-			else if (ptr == right_child(delete_one_child_parent_temp))
+			else
 			{
 				*(int*)(delete_one_child_parent_temp + (get_size(delete_one_child_parent_temp)) - 4) = 0;
 			}
-
-			if (ptr == tree_root)
-			{
-				tree_root = NULL;
-			}
-			//copy_node(ptr, delete_one_child_temp);
 			*(int*)(ptr + 4) = 0;
 			*(int*)(ptr + 8) = 0;
 			*(int*)(ptr + (get_size(ptr)) - 4) = 0;
 		}
 		else if ((get_color(ptr) == 0) && (color_child == 1))
 		{
-			color_black(delete_one_child_temp);
-			delete_one_child_parent_temp = parent(ptr);
-			/*if (ptr == tree_root)
-			{
-				tree_root = delete_one_child_temp;
-			}
-
-			if (ptr == left_child(delete_one_child_parent_temp))
-			{
-				copy_node(ptr, delete_one_child_temp);
-				*(int*)(delete_one_child_parent_temp + 4) = (int)delete_one_child_temp;
-			}
-			else if (ptr == right_child(delete_one_child_parent_temp))
-			{
-				copy_node(ptr, delete_one_child_temp);
-				*(int*)(delete_one_child_parent_temp + (get_size(delete_one_child_parent_temp)) - 4) = (int)delete_one_child_temp;
-			}
-			else
-			{
-				copy_node(ptr, delete_one_child_temp);
-			}*/
-			printf("delete_one_child - before copy_node (tree_root : %p)\n", tree_root);
-			copy_node(ptr, delete_one_child_temp);
-			printf("delete_one_child - test traverse (tree_root : %p)\n", tree_root);
-			inorder_traverse(tree_root);
-			if (ptr == right_child(delete_one_child_temp))
-			{
-				*(int*)(delete_one_child_temp + (get_size(delete_one_child_temp)) - 4) = 0;
-			}
-			else
-			{
-				*(int*)(delete_one_child_temp + 4) = 0;
-			}
-			*(int*)(ptr + 4) = 0;
-			*(int*)(ptr + 8) = 0;
-			*(int*)(ptr + (get_size(ptr)) - 4) = 0;
-			
+			color_black(delete_one_child_parent_temp);
 		}
 		else
 		{
-			delete_case1(ptr);
-			printf("After delete_case1~6 : (tree_root : %p)\n", tree_root);
-			inorder_traverse(tree_root);
-			delete_one_child_parent_temp = parent(ptr);
-			if (delete_one_child_parent_temp == NULL)
+		delete_case1(ptr);
+		printf("After delete_case1~6 : (tree_root : %p)\n", tree_root);
+		inorder_traverse(tree_root);
+		delete_one_child_parent_temp = parent(ptr);
+		if (delete_one_child_parent_temp == NULL)
+		{
+			tree_root = NULL;
+		}
+		else
+		{
+			printf("delete_one_child - delete_one_child_parent_temp : %p, ptr : %p\n", delete_one_child_parent_temp, ptr);
+			if (ptr == left_child(delete_one_child_parent_temp))
 			{
-				tree_root = NULL;
+				*(int*)(delete_one_child_parent_temp + 4) = 0;
 			}
 			else
 			{
-				printf("delete_one_child - delete_one_child_parent_temp : %p, ptr : %p\n", delete_one_child_parent_temp, ptr);
-				if (ptr == left_child(delete_one_child_parent_temp))
-				{
-					*(int*)(delete_one_child_parent_temp + 4) = 0;
-				}
-				else
-				{
-					*(int*)(delete_one_child_parent_temp + (get_size(delete_one_child_parent_temp)) - 4) = 0;
-				}
+				*(int*)(delete_one_child_parent_temp + (get_size(delete_one_child_parent_temp)) - 4) = 0;
 			}
-			*(int*)(ptr + 4) = 0;
-			*(int*)(ptr + 8) = 0;
-			*(int*)(ptr + (get_size(ptr)) - 4) = 0;
 		}
+		*(int*)(ptr + 4) = 0;
+		*(int*)(ptr + 8) = 0;
+		*(int*)(ptr + (get_size(ptr)) - 4) = 0;
 	}
 }
 void* find_inorder_pred_res;
@@ -1283,13 +1162,13 @@ int mm_init(range_t **ranges)
 void* mm_malloc(size_t size)
 {
   // For debuging.
-  //printf("ALLOCATION - %d\n", (allocation_counter++));
+  printf("ALLOCATION - %d\n", (allocation_counter++));
   //int newsize = ALIGN(size + SIZE_T_SIZE);
   int newsize = ALIGN(size + 2*SIZE_T_SIZE); // 8 for header and footer of memory block in heap.
   //void *p = mem_sbrk(newsize);
   if (lst_start == lst_end) // Allocating case 1 : There is no block allocated.
   {
-    printf("Allocating case 1 - block size : %d\n", newsize);
+    //printf("Allocating case 1 - block size : %d\n", newsize);
     lst_current = mem_sbrk(newsize);
     if (lst_current == (void *)-1)
     {
@@ -1299,37 +1178,32 @@ void* mm_malloc(size_t size)
     (*(int*)(lst_current + (newsize - 8))) = (newsize & -8) + 1;
     lst_end = lst_current + newsize;
     lst_start = lst_current;
-    printf("mm_malloc - new allocation - lst_start : %p, lst_end : %p, allocated : %d\n", lst_start, lst_end, ((*(int*)lst_start) & 1));
+    //printf("mm_malloc - new allocation - lst_start : %p, lst_end : %p, allocated : %d\n", lst_start, lst_end, ((*(int*)lst_start) & 1));
   }
   else // Allocating case 2 : Allocated blocks exists. Free or allocated. Find 'free and allocatable size' block. If not exists, allocate new block at the end of list.
   {
     //int allocated = 0;
     //for (lst_tracker_free = lst_start_free; ((lst_tracker_free != NULL) && ((*(int*)(lst_tracker_free + 8)) != 0)); lst_tracker_free = ((void*)(*((int*)lst_tracker_free + 2))))
     //lst_tracker_free = lst_start_free;
-    printf("Allocating case 2 - block size - %d\n", newsize);
+    //printf("Allocating case 2 - lst_start_free : %p, lst_tracker_free : %p, lst_end_free : %p, block size - %d\n", lst_start_free, lst_tracker_free, lst_end_free, newsize);
     //while((lst_tracker_free != NULL)) //&& ((*(int*)(lst_tracker_free + 8)) != 0))
     found_node = find_block(newsize, tree_root);
-	printf("Allocating case2 - found_node : %p, found_node size : %d\n", found_node, get_size(found_node));
     if (found_node != NULL)
     {
 	if (get_size(found_node) <= newsize + 24) // Case of best block.
 	{
-		printf("Allocating case2 - get_size(found_node) <= newsize + 24 - lst_start : %p, found_node : %p\n", lst_start, found_node);
 	    if (found_node != lst_start) // If found_node is not the start of block list, prev block's next block allocation bit of header and footer should be changed.
 	    {
 		int prev_size = *(int*)(found_node - 8) & -8;
-		printf("Allocating case2 - prev_size : %d\n", prev_size);
 		*(int*)(found_node - prev_size) = (*(int*)(found_node - prev_size)) | 2;
 		*(int*)(found_node - 8) = (*(int*)(found_node - 8)) | 2;
 	    }
-		printf("Allocating case2 - done with prev block.\n");
 	    *(int*)found_node = (*(int*)found_node | 1);
 	    *(int*)(found_node + (get_size(found_node)) - 8) = (*(int*)(found_node + (get_size(found_node)) - 8) | 1);
 	    lst_current = found_node;
 	}
 	else
 	{
-		printf("Allocating case2 - get_size(found_node) > newsize + 24\n");
 	    if (found_node != lst_start) // If found_node is not the start of block list, pre block's next block allocation bit of header and footer should be changed.
 	    {
 		int prev_size = *(int*)(found_node - 8) & -8;
@@ -1365,7 +1239,7 @@ void* mm_malloc(size_t size)
 	lst_end = lst_current + newsize;
     }
   }
-  printf("Allocation - address : %p, size : %d, actual size : %d\n", lst_current, newsize, get_size(lst_current));
+  printf("Allocation - address : %p, size : %d\n", lst_current, newsize);
   void* p = lst_current+8;
   if (p == (void *)-1)
     return NULL;
