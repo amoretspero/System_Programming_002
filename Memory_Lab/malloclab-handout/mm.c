@@ -80,7 +80,9 @@ void free_list_print (void* lst)
 		}
 	}
 }
-// Red Black Tree Implementation : HEADER(4)-LEFT_CHILD(4)-PARENT(4)-...-RIGHT_CHILD(4)-FOOTER(4) : Minimum size : 24
+// Red Black Tree Implementation : HEADER(4)-LEFT_CHILD(4)-PARENT(4)-...-FOOTER(4)-RIGHT_CHILD(4) : Minimum size : 24
+int get_size(void* ptr);
+void inorder_traverse(void* ptr);
 void* parent (void* ptr)
 {
 	if (ptr != NULL)
@@ -107,7 +109,7 @@ void* right_child(void* ptr)
 {
 	if (ptr != NULL)
 	{
-		return ((void*)(*(int*)(ptr + (*(int*)ptr & -8) - 8)));
+		return ((void*)(*(int*)(ptr + (*(int*)ptr & -8) - 4)));
 	}
 	else
 	{
@@ -147,6 +149,7 @@ void color_red (void* ptr) // Color bit is 1 for RED
 	if (ptr != NULL)
 	{
 		*(int*)ptr = (*(int*)ptr) | 4;
+		*(int*)(ptr + (get_size(ptr)) - 8) = (*(int*)(ptr + (get_size(ptr)) - 8)) | 4;
 	}
 }
 void color_black (void* ptr) // Color bit is 0 for BLACK
@@ -154,6 +157,7 @@ void color_black (void* ptr) // Color bit is 0 for BLACK
 	if (ptr != NULL)
 	{
 		*(int*)ptr = (*(int*)ptr) & -5;
+		*(int*)(ptr + (get_size(ptr)) - 8) = (*(int*)(ptr + (get_size(ptr)) - 8)) & -5;
 	}
 }
 int get_color(void* ptr)
@@ -178,19 +182,35 @@ int get_size(void* ptr)
 		return 0;
 	}
 }
+void insert_case1 (void* ptr);
+void insert_case2 (void* ptr);
+void insert_case3 (void* ptr);
+void insert_case4 (void* ptr);
+void insert_case5 (void* ptr);
 
 void* tree_root = NULL;
+void insert_bst(void* ptr, void* tree);
 void insert(void* ptr, void* tree)
+{
+    insert_bst(ptr, tree);
+    printf("tree root : %p\n", tree_root);
+    inorder_traverse(tree_root);
+    printf("insert - Inorder traverse done!\n");
+    insert_case1(ptr);
+}
+void insert_bst(void* ptr, void* tree)
 {
 	if (ptr != NULL)
 	{
 		if (tree == NULL) // Case 1 : Tree is not constructed.
 		{
 			tree = ptr;
-			*(int*)ptr = (*(int*)ptr) | 4; // Set the color to red.
+			tree_root = ptr;
+			*(int*)ptr = (*(int*)ptr) | 0; // Set the color to black.
 			*(int*)(ptr + 4) = 0;
 			*(int*)(ptr + 8) = 0;
-			*(int*)(ptr + (*(int*)ptr & -8) - 8) = 0;
+			*(int*)(ptr + (*(int*)ptr & -8) - 4) = 0;
+			printf("insert_bst - tree NULL -> tree : %p\n", tree);
 		}
 		else // Case 2 : Tree exists.
 		{
@@ -198,43 +218,39 @@ void insert(void* ptr, void* tree)
 			{
 				if (right_child(tree) != NULL) // Case 2-1-1 : Right child exists.
 				{
-					insert(ptr, (right_child(tree)));
+					insert_bst(ptr, (right_child(tree)));
 				}
 				else // Case 2-1-2 : Right child don't exists.
 				{
 					*(int*)ptr = (*(int*)ptr) | 4; // Set the color to red.
 					*(int*)(ptr + 8) = (int)tree;
 					*(int*)(ptr + 4) = 0;
-					*(int*)(ptr + (get_size(ptr)) - 8) = 0;
-					*(int*)(tree + (get_size(tree)) - 8) = (int)ptr;
+					*(int*)(ptr + (get_size(ptr)) - 4) = 0;
+					*(int*)(tree + (get_size(tree)) - 4) = (int)ptr;
 				}
 			}
 			else // Case 2-2 : Size of new block is less than current node. - Insert to left side.
 			{
 				if (left_child(tree) != NULL) // Case 2-2-1 : Left child exists.
 				{
-					insert(ptr, (left_child(tree)));
+					insert_bst(ptr, (left_child(tree)));
 				}
 				else // Case 2-2-2 : Left child don't exists.
 				{
 					*(int*)ptr = (*(int*)ptr) | 4; // Set the color to red.
 					*(int*)(ptr + 8) = (int)tree;
 					*(int*)(ptr + 4) = 0;
-					*(int*)(ptr + (get_size(ptr)) - 8) = 0;
+					*(int*)(ptr + (get_size(ptr)) - 4) = 0;
 					*(int*)(tree + 4) = (int)ptr;
 				}
 			}
 		}
 	}
 }
-void insert_case1 (void* ptr);
-void insert_case2 (void* ptr);
-void insert_case3 (void* ptr);
-void insert_case4 (void* ptr);
-void insert_case5 (void* ptr);
 
 void insert_case1 (void* ptr)
 {
+	printf("insert_case1\n");
 	if ((parent(ptr)) == NULL)
 	{
 		color_black(ptr);
@@ -246,6 +262,7 @@ void insert_case1 (void* ptr)
 }
 void insert_case2 (void* ptr)
 {
+	printf("insert_case2\n");
 	if (get_color(parent(ptr)) == 0)
 	{
 		return;
@@ -257,6 +274,7 @@ void insert_case2 (void* ptr)
 }
 void insert_case3 (void* ptr)
 {
+	printf("insert_case3\n");
 	if (uncle(ptr) != NULL)
 	{
 		if (get_color(uncle(ptr)) == 1)
@@ -278,21 +296,47 @@ void insert_case3 (void* ptr)
 }
 void* parent_temp_lr;
 void* parent_temp_rr;
+void* new_root_temp;
 void left_rotation(void* ptr)
 {
+	printf("left_rotation - start\n");
 	parent_temp_lr = parent(ptr);
-	*(int*)(parent_temp_lr + (get_size(parent_temp_lr)) - 8) = (int)(left_child(ptr));
-	*(int*)(ptr + 4) = (int)parent_temp_lr;
-	*(int*)(ptr + 8) = *(int*)(parent_temp_lr + 8);
-	*(int*)(parent_temp_lr + 8) = (int)ptr;
+	new_root_temp = right_child(ptr);
+	if (ptr == (left_child(parent_temp_lr)))
+	{
+	    *(int*)(parent_temp_lr + 4) = (int)(new_root_temp);
+	}
+	else
+	{
+	    *(int*)(parent_temp_lr + (get_size(parent_temp_lr)) - 4) = (int)(new_root_temp);
+	}
+	if (left_child(right_child(ptr)) != NULL)
+	{
+	    *(int*)((left_child(right_child(ptr))) + 8) = (int)ptr;
+	    *(int*)(ptr + (get_size(ptr)) - 4) = (int)(left_child(right_child(ptr)));
+	}
+	else
+	{
+	    *(int*)(ptr + (get_size(ptr)) - 4) = 0;
+	}
+	*(int*)(ptr + 8) = (int)new_root_temp;
+	*(int*)(new_root_temp + 4) = (int)ptr;
+	*(int*)(new_root_temp + 8) = (int)parent_temp_lr;
+	printf("left_rotation - done\n");
 }
 void right_rotation(void* ptr)
 {
+	printf("right_rotation - start\n");
 	parent_temp_rr = parent(ptr);
 	*(int*)(parent_temp_rr + 4) = (int)(right_child(ptr));
-	*(int*)(ptr + (get_size(ptr)) - 8) = (int)parent_temp_rr;
+	if (right_child(ptr) != NULL)
+	{
+	    *(int*)((right_child(ptr)) + 8) = (int)parent_temp_rr;
+	}
+	*(int*)(ptr + (get_size(ptr)) - 4) = (int)parent_temp_rr;
 	*(int*)(ptr + 8) = *(int*)(parent_temp_rr + 8);
 	*(int*)(parent_temp_rr + 8) = (int)ptr;
+	printf("right_rotation - done\n");
 }
 void* saved_p_ic4;
 void* saved_left_ic4;
@@ -300,6 +344,7 @@ void* saved_right_ic4;
 void* gp_temp_ic4;
 void insert_case4 (void* ptr)
 {
+	printf("insert_case4 - ptr : %p\n", ptr);
 	if ((ptr == (right_child(parent(ptr)))) && ((parent(ptr)) == (left_child(grandparent(ptr)))))
 	{
 		/*gp_temp_ic4 = grandparent(ptr);
@@ -322,12 +367,13 @@ void insert_case4 (void* ptr)
 		*(int*)(saved_p_ic4 + 4) = saved_right_ic4;*/
 		right_rotation(parent(ptr));
 
-		ptr = (void*)(*(int*)(ptr + (get_size(ptr)) - 8));
+		ptr = (void*)(*(int*)(ptr + (get_size(ptr)) - 4));
 	}
 	insert_case5(ptr);
 }
 void insert_case5 (void* ptr)
 {
+	printf("insert_case5 - ptr : %p, parent(ptr) : %p\n", ptr, parent(ptr));
 	color_black(parent(ptr));
 	color_red(grandparent(ptr));
 	if (ptr == (left_child(parent(ptr))))
@@ -388,10 +434,10 @@ void copy_node(void* ptr1, void* ptr2) // Just exchange the two nodes.
 		copy_node_ptr1_right_child_temp = right_child(ptr1);
 		*(int*)(ptr1 + 4) = (int)(left_child(ptr2));
 		*(int*)(ptr1 + 8) = (int)(parent(ptr2));
-		*(int*)(ptr1 + (get_size(ptr1)) - 8) = (int)(right_child(ptr2));
+		*(int*)(ptr1 + (get_size(ptr1)) - 4) = (int)(right_child(ptr2));
 		*(int*)(ptr2 + 4) = (int)(copy_node_ptr1_left_child_temp);
 		*(int*)(ptr2 + 8) = (int)(copy_node_ptr1_parent_temp);
-		*(int*)(ptr2 + (get_size(ptr2)) - 8) = (int)(copy_node_ptr1_right_child_temp);
+		*(int*)(ptr2 + (get_size(ptr2)) - 4) = (int)(copy_node_ptr1_right_child_temp);
 	}
 }
 
@@ -419,36 +465,56 @@ void replace_node(void* ptr1, void* ptr2) // ptr2 goes into ptr1's place and ptr
 			replace_node_ptr2_child_temp = right_child(ptr2);
 			succ = 1;
 		}
+		printf("replace_node - Debug1\n");
 		*(int*)(ptr1 + 4) = 0;
 		*(int*)(ptr1 + 8) = 0;
-		*(int*)(ptr1 + (get_size(ptr1)) - 8) = 0;
+		*(int*)(ptr1 + (get_size(ptr1)) - 4) = 0;
 		*(int*)(ptr2 + 4) = (int)(replace_node_ptr1_left_child_temp);
 		*(int*)(ptr2 + 8) = (int)(replace_node_ptr1_parent_temp);
-		*(int*)(ptr2 + (get_size(ptr2)) - 8) = (int)(replace_node_ptr1_right_child_temp);
+		*(int*)(ptr2 + (get_size(ptr2)) - 4) = (int)(replace_node_ptr1_right_child_temp);
+		printf("replace_node - Debug2\n");
 		if (replace_node_ptr2_parent_temp == ptr1) // Successor or predecessor's parent is ptr1. 
 		{
+			printf("replace_node - Successor or predecessor's parent is ptr1\n");
 			if (pred)
 			{
+				printf("replace_node - parent is ptr1 - pred\n");
 				*(int*)(ptr2 + 4) = (int)(replace_node_ptr2_child_temp);
-				*(int*)(replace_node_ptr2_child_temp + 8) = (int)ptr2;
+				if (replace_node_ptr2_child_temp != NULL)
+				{
+				    *(int*)(replace_node_ptr2_child_temp + 8) = (int)ptr2;
+				}
 			}
 			else if (succ)
 			{
-				*(int*)(ptr2 + (get_size(ptr2)) - 8) = (int)(replace_node_ptr2_child_temp);
-				*(int*)(replace_node_ptr2_child_temp + 8) = (int)ptr2;
+				printf("replace_node - parent is ptr1 - succ\n");
+				*(int*)(ptr2 + (get_size(ptr2)) - 4) = (int)(replace_node_ptr2_child_temp);
+				if (replace_node_ptr2_child_temp != NULL)
+				{
+				    *(int*)(replace_node_ptr2_child_temp + 8) = (int)ptr2;
+				}
 			}
 		}
 		else // Successor or predecossor's parent is not ptr1. Ordinary case.
 		{
+			printf("replace_node - Successor or predecessor's parent is not ptr1.\n");
 			if (pred)
 			{
-				*(int*)(replace_node_ptr2_parent_temp + (get_size(replace_node_ptr2_parent_temp)) - 8) = (int)(replace_node_ptr2_child_temp);
-				*(int*)(replace_node_ptr2_child_temp + 8) = (int)replace_node_ptr2_parent_temp;
+				printf("replace_node - parent is not ptr1 - pred\n");
+				*(int*)(replace_node_ptr2_parent_temp + (get_size(replace_node_ptr2_parent_temp)) - 4) = (int)(replace_node_ptr2_child_temp);
+				if (replace_node_ptr2_child_temp != NULL)
+				{
+				    *(int*)(replace_node_ptr2_child_temp + 8) = (int)replace_node_ptr2_parent_temp;
+				}
 			}
 			else if (succ)
 			{
+				printf("replace_node - parent is not ptr1 - succ\n");
 				*(int*)(replace_node_ptr2_parent_temp + 4) = (int)(replace_node_ptr2_child_temp);
-				*(int*)(replace_node_ptr2_child_temp + 8) = (int)replace_node_ptr2_parent_temp;
+				if (replace_node_ptr2_child_temp != NULL)
+				{
+				    *(int*)(replace_node_ptr2_child_temp + 8) = (int)replace_node_ptr2_parent_temp;
+				}
 			}
 		}
 	}
@@ -465,22 +531,28 @@ void delete_one_child(void* ptr)
 	}
 	else
 	{
-		if ((left_child(ptr) == NULL) && (right_child(ptr) != NULL)) // Left child exists.
+		printf("delete_one_child - ptr : %p, parent : %p\n", ptr, (parent(ptr)));
+		if ((left_child(ptr) == NULL) && (right_child(ptr) != NULL)) // Right child exists.
 		{
+			printf("delete_one_child - right_child exists!\n");
 			delete_one_child_temp = right_child(ptr);
 		}
-		else if ((left_child(ptr) != NULL) && (right_child(ptr) == NULL)) // Right child exists.
+		else if ((left_child(ptr) != NULL) && (right_child(ptr) == NULL)) // Left child exists.
 		{
+			printf("delete_one_child - left_child exists!\n");
 			delete_one_child_temp = left_child(ptr);
 		}
 		else // No child exists.
 		{
+			printf("delete_one_child - no child exists!\n");
 			if (parent(ptr) == NULL) // ptr is root node.
 			{
+				printf("delete_one_child - ptr is root!\n");
 				tree_root = NULL;
 			}
 			else // ptr is not root.
 			{
+				printf("delete_one_child - ptr is not root!\n");
 				delete_one_child_parent_temp = parent(ptr);
 				if (left_child(delete_one_child_parent_temp) == ptr) // ptr is left child of parent.
 				{
@@ -488,13 +560,14 @@ void delete_one_child(void* ptr)
 				}
 				else // ptr is right child of parent.
 				{
-					*(int*)(delete_one_child_parent_temp + (get_size(delete_one_child_parent_temp)) - 8) = 0; // Set right child of ptr's parent as NULL.
+					*(int*)(delete_one_child_parent_temp + (get_size(delete_one_child_parent_temp)) - 4) = 0; // Set right child of ptr's parent as NULL.
 				}
 				*(int*)(ptr + 8) = 0; // Set the parent of ptr as NULL.
 			}
 			return;
 		}
 		replace_node(ptr, delete_one_child_temp); // Change the node ptr and the existing child.
+		printf("delete_one_child - nodes are replaced!\n");
 		if (get_color(ptr) == 0)
 		{
 			if (get_color(delete_one_child_temp) == 1)
@@ -570,23 +643,27 @@ void delete(void* ptr)
 	{
 		if ((parent(ptr) == NULL) && (left_child(ptr) == NULL) && (right_child(ptr) == NULL)) // Case 1 : ptr is root and only node.
 		{
+			printf("delete - Case 1\n");
 			tree_root = NULL;
 			return;
 		}
 		else if ((parent(ptr) == NULL) && (left_child(ptr) == NULL) && (right_child(ptr) != NULL)) // Case 2 : ptr is root and left child is NULL.
 		{
+			printf("delete - Case 2\n");
 			tree_root = right_child(ptr);
 			delete_one_child(ptr);
 			return;
 		}
 		else if ((parent(ptr) == NULL) && (right_child(ptr) == NULL) && (left_child(ptr) != NULL)) // Case 3 : ptr is root and right child is NULL.
 		{
+			printf("delete - Case 3\n");
 			tree_root = left_child(ptr);
 			delete_one_child(ptr);
 			return;
 		}
 		else if ((parent(ptr) == NULL) && (right_child(ptr) != NULL) && (left_child(ptr) != NULL)) // Case 4 : ptr is root and left, right are not NULL.
 		{
+			printf("delete - Case 4\n");
 			delete_inorder_pred_temp = find_inorder_pred(ptr);
 			copy_node(ptr, delete_inorder_pred_temp);
 			tree_root = delete_inorder_pred_temp;
@@ -595,21 +672,25 @@ void delete(void* ptr)
 		}
 		else if ((right_child(ptr) == NULL) && (left_child(ptr) == NULL)) // Case 5 : ptr is not root and has no child.
 		{
+			printf("delete - Case 5\n");
 			delete_one_child(ptr);
 			return;
 		}
 		else if ((right_child(ptr) != NULL) && (left_child(ptr) == NULL)) // Case 6 : ptr is not root and has right child.
 		{
+			printf("delete - Case 6\n");
 			delete_one_child(ptr);
 			return;
 		}
 		else if ((right_child(ptr) == NULL) && (left_child(ptr) != NULL)) // Case 7 : ptr is not root and has left child.
 		{
+			printf("delete - Case 7\n");
 			delete_one_child(ptr);
 			return;
 		}
 		else // Case 8 : ptr is not root and has both child.
 		{
+			printf("delete - Case 8\n");
 			delete_inorder_pred_temp = find_inorder_pred(ptr);
 			copy_node(ptr, delete_inorder_pred_temp);
 			delete_one_child(ptr);
@@ -826,7 +907,69 @@ void delete_case6(void* ptr)
 	}
 }
 				
+void* find_block(int size, void* tree) // Find the best block(block size is same or greater than given size, and it should be same of smaller than size+24. If no smaller block than size is size+24, return smallest size block and split it in mm_malloc.
+{
+    if (tree == NULL) // Tree does not exist.
+    {
+	return NULL;
+    }
+    else // Tree exists.
+    {
+	int node_size = get_size(tree);
+	if ((node_size < size) && ((right_child(tree)) != NULL)) // size of node is smaller than size. must find larger block.
+	{
+	    return find_block(size, (right_child(tree)));
+	}
+	else if ((node_size < size) && (right_child(tree) == NULL)) // size of node is smaller than size, but there is no larger block, return NULL.
+	{
+	    return NULL;
+	}
+	else if ((node_size > size + 24) && (left_child(tree) != NULL)) // size of node is larger than size+24. must find smaller block.
+	{
+	    return find_block(size, (left_child(tree)));
+	}
+	else if ((node_size > size + 24) && (left_child(tree) == NULL)) // size of node is larger than size+24, but there is no smaller block, return and split.
+	{
+	    delete(tree);
+	    return tree;
+	}
+	else //((node_size >= size) && (node_size <= size + 24)) - Best block is found. allocate without splitting.
+	{
+	    delete(tree);
+	    return tree;
+	}
+    }
+}
+void* found_node;
 
+void inorder_traverse(void* tree)
+{
+    //printf("INORDER TRAVERSE\n");
+    if (tree == NULL)
+    {
+	return;
+    }
+    else
+    {
+	if (left_child(tree) == NULL)
+	{
+	    printf("Color : %d, Size : %d, Address : %p, left child : %p, right child : %p, parent : %p\n", get_color(tree), get_size(tree), tree, left_child(tree), right_child(tree), parent(tree));
+	    if (right_child(tree) != NULL)
+	    {
+		inorder_traverse(right_child(tree));
+	    }
+	}
+	else
+	{
+	    inorder_traverse(left_child(tree));
+	    printf("Color : %d, Size : %d, Address : %p, left child : %p, right child : %p, parent : %p\n", get_color(tree), get_size(tree), tree, left_child(tree), right_child(tree), parent(tree));
+	    if (right_child(tree) != NULL)
+	    {
+		inorder_traverse(right_child(tree));
+	    }
+	}
+    }
+}
 
 
 
@@ -872,6 +1015,7 @@ int mm_init(range_t **ranges)
   lst_tracker = NULL;
   lst_current = NULL;
   remaining_block_temp = NULL;
+  tree_root = NULL;
 
   /* Initially, lst points 8 bytes away from start of heap. lst_start and lst_end points to same address as lst. */
   lst_current = mem_sbrk(16);
@@ -897,7 +1041,7 @@ int mm_init(range_t **ranges)
 void* mm_malloc(size_t size)
 {
   // For debuging.
-  //printf("ALLOCATION - %d\n", (allocation_counter++));
+  printf("ALLOCATION - %d\n", (allocation_counter++));
   //int newsize = ALIGN(size + SIZE_T_SIZE);
   int newsize = ALIGN(size + 2*SIZE_T_SIZE); // 8 for header and footer of memory block in heap.
   //void *p = mem_sbrk(newsize);
@@ -917,143 +1061,61 @@ void* mm_malloc(size_t size)
   }
   else // Allocating case 2 : Allocated blocks exists. Free or allocated. Find 'free and allocatable size' block. If not exists, allocate new block at the end of list.
   {
-    int allocated = 0;
+    //int allocated = 0;
     //for (lst_tracker_free = lst_start_free; ((lst_tracker_free != NULL) && ((*(int*)(lst_tracker_free + 8)) != 0)); lst_tracker_free = ((void*)(*((int*)lst_tracker_free + 2))))
-    lst_tracker_free = lst_start_free;
+    //lst_tracker_free = lst_start_free;
     //printf("Allocating case 2 - lst_start_free : %p, lst_tracker_free : %p, lst_end_free : %p, block size - %d\n", lst_start_free, lst_tracker_free, lst_end_free, newsize);
-    while((lst_tracker_free != NULL)) //&& ((*(int*)(lst_tracker_free + 8)) != 0))
+    //while((lst_tracker_free != NULL)) //&& ((*(int*)(lst_tracker_free + 8)) != 0))
+    found_node = find_block(newsize, tree_root);
+    if (found_node != NULL)
     {
-      //printf("In for loop - lst_start_free : %p, lst_tracker_free : %p, next free block : %x, lst_end_free : %p, free block size : %d\n", lst_start_free, lst_tracker_free, *(int*)(lst_tracker_free + 8), lst_end_free, ((*(int*)lst_tracker_free) & -8));
-      //printf("allocated = %d\n", allocated);
-      if (((*(int*)lst_tracker_free & -8) >= newsize + 24)) // Free and allocatable size block has been found.
-      {
-		//printf("debug 1\n");
-		int lst_tracker_free_size = (*(int*)lst_tracker_free & -8); // Size of block that lst_tracker points. In bytes.
-		int remaining_block_size = (lst_tracker_free_size - newsize) & -8;
-		//printf("debug 2\n");
-		lst_free_next_temp = (void*)(*((int*)lst_tracker_free + 2));
-		//printf("debug 3\n");
-		lst_free_prev_temp = (void*)(*((int*)lst_tracker_free + 3));
-		lst_current = lst_tracker_free; // Gets the address of current tracking block.
-		remaining_block_temp = lst_current + newsize;
-		
-		(*(int*)lst_current) = (newsize & -8) + 1; // Set the header.
-		(*(int*)(lst_current + (newsize - 8))) = (newsize & -8) + 1; // Set the footer.
-		
-		*(int*)(remaining_block_temp) = remaining_block_size + ((*(int*)(lst_current + lst_tracker_free_size - 8)) & 3); // Set the header of remaining block.
-		(*(int*)(lst_tracker_free + lst_tracker_free_size - 8)) = remaining_block_size + ((*(int*)(lst_current + lst_tracker_free_size - 8)) & 3); // Set the footer of remaining block.
-		
-		(*(int*)(remaining_block_temp + 8)) = (int)lst_free_next_temp; // Set the next pointer of remaining block.
-		(*(int*)(remaining_block_temp + 12)) = (int)lst_free_prev_temp; // Set the prev pointer of remaining block.
-		
-		(*(int*)(lst_current - 8)) = ((*(int*)(lst_current - 8)) | 2); // Set the previous block's footer to recognize its next block(current) as allocated.
-		(*(int*)(lst_current - ((*(int*)(lst_current - 8)) & -8))) = ((*(int*)(lst_current - 8)) | 2); // Set the previous block's header to recognize its next block(current) as allocated.
-		
-		// Setting free list order.
-		if (lst_tracker_free == lst_start_free) // Selected free block is the first free block on list.
-		{
-		  //printf("lst_tracker_free = lst_start_free\n");
-		  lst_start_free = (lst_current + newsize);
-		  lst_tracker_free = lst_start_free;
-		}
-		else
-		{
-		  lst_tracker_free = lst_current + newsize;
-		}
-
-		if (*(int*)(lst_tracker_free + 12) != 0)
-		{
-		  *((int*)(*(int*)(lst_tracker_free + 12)) + 2) = (int)(lst_current + newsize);
-		}
-		if (*(int*)(lst_tracker_free + 8) != 0)
-		{
-		  *((int*)(*(int*)(lst_tracker_free + 8)) + 3) = (int)(lst_current + newsize);
-		}
-
-		// In this case, we do not add a new allocated block at the end of list, so we don't have to modify lst_end.
-		allocated = 1; // Indicates block is allocated.
-		//printf("Allocated using free block - lst_start_free : %p, lst_tracker_free : %p, next free block : %x, free block size : %d, allocated : %d\n", lst_start_free, lst_tracker_free, ((*(int*)(lst_tracker_free + 8))), ((*(int*)lst_tracker_free) & -8), ((*(int*)lst_current) & 1));
-		break;
-      }
-	  /*if ((*(int*)lst_tracker_free & -8) == newsize) // Size is exactly same.
-	  {
-		lst_current = lst_tracker_free;
-		*(int*)lst_tracker_free = ((*(int*)lst_tracker_free) | 1); // Set the header of current block.
-		*(int*)(lst_tracker_free + newsize - 8) = (*(int*)lst_tracker_free); // Set the footer of current block.(Same as header)
-		int prev_size = (*(int*)(lst_tracker_free - 8)) & -8;
-		if (lst_tracker_free != lst_start) // If current block is not the lst_start, we have to set the prev block(neighboring)'s header and footer to recognize current block as allocated. If current block is the lst_start, we don't have to modify anything.
-		{
-		  *(int*)(lst_tracker_free - prev_size) = (*(int*)(lst_tracker_free - prev_size)) | 2;
-		  *(int*)(lst_tracker_free - 8) = (*(int*)(lst_tracker_free - 8)) | 2;
-	  	}
-	  	if ((void*)(*(int*)(lst_tracker_free + 8)) != NULL) // Set the prev pointer of next free block to point to prev block of current block.
-	  	{
-		  *(int*)((void*)(*(int*)(lst_tracker_free + 8)) + 12) = *(int*)(lst_tracker_free + 12);
-	  	}
-	  	if ((void*)(*(int*)(lst_tracker_free + 12)) != NULL) // Set the next pointer of prev free block to point to next block of current block.
-	  	{
-		  *(int*)((void*)(*(int*)(lst_tracker_free + 12)) + 8) = *(int*)(lst_tracker_free + 8);
-	  	}
-
-	  	if (lst_current == lst_start_free) // If current block is previously the first free block, set the lst_start_free to next free block.
-	  	{
-		  if ((void*)(*(int*)(lst_tracker_free + 8)) != NULL)
-		  {
-		  	lst_start_free = (void*)(*(int*)(lst_tracker_free + 8));
-		  }
-		  else
-		  {
-		  	lst_start_free = NULL;
-		  }
-	  	}
-		allocated = 1;
-	  	//printf("Allocated using free block(Exact size) - lst_start_free : %p, located block : %p, located block size : %d, allocated : %d\n", lst_start_free, lst_tracker_free, ((*(int*)lst_tracker_free) & -8), ((*(int*)lst_current) & 1));
-		lst_tracker_free = (void*)(*(int*)(lst_tracker_free + 8));
-	  	break;
-	  }*/
-      //printf("IF in while ended, checking lst_tracker_free == lst_start_free\n");
-      if (lst_tracker_free == lst_start_free)
-      {
-	//printf("lst_tracker_free == lst_start_free entered\n");
-	if ((*(int*)(lst_tracker_free + 8)) != 0)
+	if (get_size(found_node) <= newsize + 24) // Case of best block.
 	{
-	  //printf("lst_stracker_Free == lst_start_free IF\n");
-	  lst_tracker_free = ((void*)(*((int*)lst_tracker_free + 2)));
-	  //printf("lst_tracker_free == lst_start_free - new lst_tracker_free value : %p\n", lst_tracker_free);
+	    if (found_node != lst_start) // If found_node is not the start of block list, prev block's next block allocation bit of header and footer should be changed.
+	    {
+		int prev_size = *(int*)(found_node - 8) & -8;
+		*(int*)(found_node - prev_size) = (*(int*)(found_node - prev_size)) | 2;
+		*(int*)(found_node - 8) = (*(int*)(found_node - 8)) | 2;
+	    }
+	    *(int*)found_node = (*(int*)found_node | 1);
+	    *(int*)(found_node + (get_size(found_node)) - 8) = (*(int*)(found_node + (get_size(found_node)) - 8) | 1);
+	    lst_current = found_node;
 	}
 	else
 	{
-	  break;
-	}
-      }
-	  else
-	  {
-      //printf("debug 4 - lst_start_free : %p, lst_tracker_free : %p, lst_end_free : %p, (*(int)(lst_tracker_free + 8)) : %x, free block size : %d\n", lst_start_free, lst_tracker_free, lst_end_free, (*(int*)(lst_tracker_free + 8)), (*(int*)lst_tracker_free)&-8);
-      if (((*(int*)(lst_tracker_free + 8)) == 0) || ((*(int*)(lst_tracker_free + 8)) == (int)lst_start_free))
-      {
-	break;
-      }
-	  else
-	  {
-		lst_tracker_free = ((void*)(*((int*)lst_tracker_free + 2)));
-	  }
-	  }
-    }
-    //printf("debug 5\n");
-    if (!allocated) // Block is not allocated while tracking block list.
-    {
-      lst_current = mem_sbrk(newsize);
-      if (lst_current == (void *)-1)
-      {
-	return NULL;
-      }
-      (*(int*)lst_current) = (newsize & -8) + 1; // Set the header.
-      (*(int*)(lst_current + (newsize - 8))) = (newsize & -8) + 1; // Set the footer.
-      (*(int*)(lst_current - 8)) = ((*(int*)(lst_current - 8)) | 2); // Set the previous block's footer to recognize its next block(current) as allocated.
-      (*(int*)(lst_current - ((*(int*)(lst_current - 8)) & -8))) = ((*(int*)(lst_current - 8)) | 2); // Set the previous block's header to recognize its next block(current) as allocated.
-      lst_end = lst_current + newsize;
-      //printf("mm_malloc - new allocation - lst_current : %p, lst_end : %p, block size : %d, allocated : %d\n", lst_current, lst_end, (*(int*)lst_current), ((*(int*)lst_current) & 1));
+	    if (found_node != lst_start) // If found_node is not the start of block list, pre block's next block allocation bit of header and footer should be changed.
+	    {
+		int prev_size = *(int*)(found_node - 8) & -8;
+		*(int*)(found_node - prev_size) = (*(int*)(found_node - prev_size)) | 2;
+		*(int*)(found_node - 8) = (*(int*)(found_node - 8)) | 2;
+	    }
+	    lst_current = found_node;
+	    int remaining_block_size = (get_size(found_node)) - newsize;
+	    remaining_block_temp = lst_current + newsize;
 
+	    *(int*)lst_current = (newsize & -8) + 1;
+	    *(int*)(lst_current + newsize - 8) = (newsize & -8) + 1;
+	    
+	    *(int*)remaining_block_temp = remaining_block_size + (*(int*)(remaining_block_temp + remaining_block_size - 8) & 2);
+	    *(int*)(remaining_block_temp + remaining_block_size - 8) = remaining_block_size + (*(int*)(remaining_block_temp + remaining_block_size - 8) & 2);
+
+	    insert(remaining_block_temp, tree_root);
+	}
+    }
+    else // Block is not found.
+    {
+	lst_current = mem_sbrk(newsize);
+	if (lst_current == (void*)-1)
+	{
+	    return NULL;
+	}
+	int prev_size = *(int*)(lst_current - 8) & -8;
+	*(int*)lst_current = (newsize & -8) + 1;
+	*(int*)(lst_current + newsize - 8) = (newsize & -8) + 1;
+	*(int*)(lst_current - 8) = (*(int*)(lst_current - 8)) | 2;
+	*(int*)(lst_current - prev_size) = (*(int*)(lst_current - prev_size)) | 2;
+
+	lst_end = lst_current + newsize;
     }
   }
   void* p = lst_current+8;
@@ -1068,466 +1130,128 @@ void* mm_malloc(size_t size)
 /*
  * mm_free - Freeing a block does nothing.
  */
-void mm_free(void *ptr)
+
+void mm_free(void* ptr)
 {
-  // For debuging.
-  //printf("FREE - %d\n", (free_counter++));
-  //printf("mm_free - block size : %d\n", ((*(int*)(ptr - 8)) & -8));
-  ptr = ptr - 8;
-  //printf("mm_free check : current block allocated : %d, ptr == lst_start : %d, current block is not end : %d, next block is allocated : %d\n", ((*(int*)ptr & 1) == 1), (ptr == lst_start), ((ptr + (*(int*)ptr & -8)) != lst_end), (((*(int*)(ptr + (*(int*)ptr & -8))) & 1) == 1));
-  //printf("mm_free check : prev block header : %d, current block header : %d\n", (*(int*)(ptr - 8) & 3), (*(int*)ptr & 3)); 
-  //free_list_print(lst_start_free);
-  if ((*(int*)ptr & 1) != 1)
-  {
-    return;
-  }
-  /*if (double_free_checker(ptr) == 0)
-  {
-	  return;
-  }*/
-  /* YOUR IMPLEMENTATION */
-  int current_header = (*(int*)ptr) & 3;
-  int prev_header = (*(int*)(ptr - 8)) & 3;
-  current_block_end = ptr + (*(int*)ptr & -8);
-  //if ((((*(int*)ptr) & 3) == 3) && (((*(int*)(ptr - 8)) & 3) == 3) && ((ptr + (*(int*)ptr & -8)) != lst_end) && (ptr != lst_start)) // Case 1 : block next and prev are all allocated.
-  if ((current_header == 3) && (prev_header == 3) && (current_block_end != lst_end) && (ptr != lst_start))
-  {
-    //printf("mm_free case1 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
-    int prev_size = ((*(int*)(ptr - 8)) & -8);
-    int current_size = ((*(int*)ptr) & -8);
-    (*(int*)(ptr - 8)) = ((*(int*)(ptr - 8)) & -3); // Set the footer of previous block so that it could recognize its next block(current) as freed.
-    (*(int*)(ptr - prev_size)) = ((*(int*)(ptr - 8)) & -3); // Set the header of previous block so that it could recognize its next block(current) as freed.
-    lst_free_root_temp = lst_start_free;
-    lst_start_free = ptr; // Set the freeing block as root of free list.
-    *(int*)(lst_start_free + 8) = (int)lst_free_root_temp;
-    *(int*)(lst_start_free + 12) = 0; // Because freed block is inserted at the root of the list, its prev block is NULL.
-	if (lst_free_root_temp != NULL)
-	{
-	  (*(int*)(lst_free_root_temp + 12)) = (int)lst_start_free; // Set the previous pointer of next free block to point to currently freed block.
-	}
-    (*(int*)ptr) = ((*(int*)ptr) & -2); // Set the header of freed block that it should recognized as ptr is free and its next block is allocated.
-    (*(int*)(ptr + current_size - 8)) = ((*(int*)ptr) & -2); // Set the footer of freed block that it should recognized as ptr is free and its next block is allocated.
-  }
-  //else if ((((*(int*)ptr) & 3) == 3) && (((*(int*)(ptr - 8)) & 3) == 2) && ((ptr + (*(int*)ptr & -8)) != lst_end) && (ptr != lst_start)) // Case 2 : block next is allocated and block prev is free.
-  else if ((current_header == 3) && (prev_header == 2) && (current_block_end != lst_end) && (ptr != lst_start))
-  {
-    //printf("mm_free case2 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
-    // In this case, previous block will be coalesced, hence setting footer of it is not needed.
-    int prev_size = ((*(int*)(ptr - 8)) & -8);
-    int current_size = ((*(int*)ptr) & -8);
-    (*(int*)(ptr - prev_size)) = ((prev_size + current_size) & -8) + 2; // Set the header of previous block so that it could recognize its next block(current's next) as allocated.
-    lst_free_root_temp = lst_start_free;
-    lst_start_free = ptr - prev_size;
-	if (*(int*)(lst_start_free + 12) != 0)
-	{
-	  if (*(int*)(lst_start_free + 8) != 0)
-	  {
-	    *((int*)(*(int*)(lst_start_free + 12)) + 2) = *(int*)(lst_start_free + 8); // Set the next pointer of prev block's previous free block to prev block's next free block.
-	  }
-	  else
-	  {
-		*((int*)(*(int*)(lst_start_free + 12)) + 2) = 0;
-	  }
-	}
-	//printf("mm_free case2 - Debug1\n");
-	if (*(int*)(lst_start_free + 8) != 0)
-	{
-	  if (*(int*)(lst_start_free + 12) != 0)
-	  {
-	    *((int*)(*(int*)(lst_start_free + 8)) + 3) = *(int*)(lst_start_free + 12); // Set the prev pointer of prev block's next free block to prev block's previous free block.
-	  }
-	  else
-	  {
-		*((int*)(*(int*)(lst_start_free + 8)) + 3) = 0;
-	  }
-	}
-	//printf("mm_free case2 - Debug2\n");
-	if (lst_free_root_temp >= ptr - prev_size && lst_free_root_temp <= ptr) // In this case, since the prev pointer of lst_free_root_temp's next free block(if exists) is already pointing at current(merged) block, we don't have to modify it.
-	{
-	  /*if (*(int*)(lst_free_root_temp + 8) != 0)
-	  {
-		*(int*)(lst_start_free + 8) = *((int*)((void*)(*(int*)(lst_free_root_temp + 8)) + 8));
-	  }
-	  else
-	  {
-		*(int*)(lst_start_free + 8) = *(int*)(lst_start_free + 8);
-	  }*/
-	  *(int*)(lst_start_free + 8) = *(int*)(lst_start_free + 8);
-	  if ((void*)(*(int*)(lst_free_root_temp + 8)) != NULL)
-	  {
-	    *(int*)((void*)(*(int*)(lst_free_root_temp + 8)) + 12) = (int)lst_start_free;
-	  }
-	}
-	else
-	{
-      *(int*)(lst_start_free + 8) = (int)lst_free_root_temp;
-	  if (lst_free_root_temp != NULL)
-	  {
-		*(int*)(lst_free_root_temp + 12) = (int)lst_start_free; // Set the prev pointer of next free block to point to the currently freed block.
-	  }
-	}
-    //printf("mm_free case2 - Debug3\n");
-	*(int*)(lst_start_free + 12) = 0;
-	/*if (lst_free_root_temp != NULL)
-	{
-	  *(int*)(lst_free_root_temp + 12) = (int)lst_start_free; // Set the prev pointer of next free block to point to the currently freed block.
-	}*/
-    (*(int*)(ptr + current_size - 8)) = ((prev_size + current_size) & -8) + 2; // Set the footer of freed block that it should recognized as ptr is free and its next block is allocated.
-    //printf("mm_free case2 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
-  }
-  //else if ((((*(int*)ptr) & 3) == 1) && (((*(int*)(ptr - 8)) & 3) == 3) && ((ptr + (*(int*)ptr & -8)) != lst_end) && (ptr != lst_start)) // Case 3 : block next is free and block prev is allocated.
-  else if ((current_header == 1) && (prev_header == 3) && (current_block_end != lst_end) && (ptr != lst_start))
-  {
-    //printf("mm_free case3 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
-    // In this case, next block will be coalesced
-    int next_size = ((*(int*)(ptr + ((*(int*)ptr) & -8))) & -8);
-    int current_size = ((*(int*)ptr) & -8);
-    (*(int*)(ptr - 8)) = ((*(int*)(ptr - 8)) & -3); // Set the footer of prev block so that it could recognize its next block(current) as freed.
-    (*(int*)(ptr - ((*(int*)(ptr - 8)) & -8))) = ((*(int*)(ptr - 8)) & -3); // Set the header of prev block so that it could recognize its next block(current) as freed.
-    lst_free_root_temp = lst_start_free;
-    lst_start_free = ptr;
-	if (*(int*)(lst_start_free + current_size + 12) != 0)
-	{
-	  if (*(int*)(lst_start_free + current_size + 8) != 0)
-	  {
-		*((int*)(*(int*)(lst_start_free + current_size + 12)) + 2) = *(int*)(lst_start_free + current_size + 8);
-	  }
-	  else
-	  {
-		*((int*)(*(int*)(lst_start_free + current_size + 12)) + 2) = 0;
-	  }
-	}
-	if (*(int*)(lst_start_free + current_size + 8) != 0)
-	{
-      if (*(int*)(lst_start_free + current_size + 12) != 0)
-	  {
-		*((int*)(*(int*)(lst_start_free + current_size + 8)) + 3) = *(int*)(lst_start_free + current_size + 12);
-	  }
-	  else
-	  {
-		*((int*)(*(int*)(lst_start_free + current_size + 8)) + 3) = 0;
-	  }
-	}
-	if (lst_free_root_temp >= ptr && lst_free_root_temp <= ptr + current_size + next_size) // When the next block is the first free block in the list.
-	{
-	  *(int*)(lst_start_free + 8) = *(int*)(ptr + current_size + 8);
-	  if (*(int*)(lst_free_root_temp + 8) != 0) // In this case, we have to check next block's next block is not NULL, and if not, set the prev pointer of that block to point to current block.
-	  {
-		*(int*)((void*)(*(int*)(lst_free_root_temp + 8)) + 12) = (int)lst_start_free;
-	  }
-	}
-	else // When the next block is not the first free block on list.
-	{
-	  *(int*)(lst_start_free + 8) = (int)lst_free_root_temp;
-	  if (lst_free_root_temp != NULL)
-	  {
-		*(int*)(lst_free_root_temp + 12) = (int)lst_start_free;
-	  }
-	}
-	/*if (lst_free_root_temp != NULL)
-	{
-	  //printf("mm_free case3 : lst_free_root_temp : %p\n", lst_free_root_temp);
-      *(int*)(lst_free_root_temp + 12) = (int)lst_start_free;  // Set the prev pointer of next free block to point to currently freed block.
-	}*/
-    *(int*)(lst_start_free + 12) = 0;
-    (*(int*)ptr) = ((next_size + current_size) & -8) + ((*(int*)(ptr + current_size)) & 3); // Set the header of current block(after coalesced).
-    (*(int*)(ptr + next_size + current_size - 8)) = ((next_size + current_size) & -8) + ((*(int*)(ptr + current_size)) & 3); // Set the footer of current block(after coalesced).
-    //printf("mm_free case3 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
-	//free_list_print(lst_start_free);
-  }
-  
-  //else if ((((*(int*)ptr) & 3) == 1) && (((*(int*)(ptr - 8)) & 3) == 2) && ((ptr + (*(int*)ptr & -8)) != lst_end) && (ptr != lst_start)) // Case 4 : block next and prev are both free.
-  else if ((current_header == 1) && (prev_header == 2) && (current_block_end != lst_end) && (ptr != lst_start))
-  {
-    //printf("mm_free case4 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
-    // In this case, prev and next block will be both coalesced.
-    int prev_size = ((*(int*)(ptr - 8)) & -8);
-    int current_size = ((*(int*)ptr) & -8);
-    int next_size = ((*(int*)(ptr + current_size)) & -8);
-    //printf("mm_free case4 debug1\n");
-    (*(int*)(ptr - prev_size)) = ((prev_size + current_size + next_size) & -8) + ((*(int*)(ptr + current_size)) & 3); // Set the header of prev block.
-    (*(int*)(ptr + current_size + next_size - 8)) = ((prev_size + current_size + next_size) & -8) + ((*(int*)(ptr + current_size)) & 3); // Set the footer of next block.
-    //printf("mm_free case4 debug2\n");
-    lst_free_root_temp = lst_start_free;
-    //lst_start_free = (ptr - (*(int*)(ptr - prev_size)));
-    lst_start_free = (ptr - prev_size);
-    if (*(int*)(lst_start_free + 12) != 0)
-	{
-	  if (*(int*)(lst_start_free + 8) != 0)
-	  {
-	    *((int*)(*(int*)(lst_start_free + 12)) + 2) = *(int*)(lst_start_free + 8); // Set the next pointer of prev block's previous free block to prev block's next free block.
-	  }
-	  else
-	  {
-		*((int*)(*(int*)(lst_start_free + 12)) + 2) = 0;
-	  }
-	}
-	if (*(int*)(lst_start_free + 8) != 0)
-	{
-	  if (*(int*)(lst_start_free + 12) != 0)
-	  {
-	    *((int*)(*(int*)(lst_start_free + 8)) + 3) = *(int*)(lst_start_free + 12); // Set the prev pointer of prev block's next free block to prev block's previous free block.
-	  }
-	  else
-	  {
-		*((int*)(*(int*)(lst_start_free + 8)) + 3) = 0;
-	  }
-	}
+    ptr = ptr - 8;
+    printf("FREE - %d\n", free_counter++);
+    printf("mm_free - ptr : %p\n", ptr);
 
-    if (*(int*)(ptr + current_size + 12) != 0)
-	{
-	  if (*(int*)(ptr + current_size + 8) != 0)
-	  {
-		*((int*)(*(int*)(ptr + current_size + 12)) + 2) = *(int*)(ptr + current_size + 8);
-	  }
-	  else
-	  {
-		*((int*)(*(int*)(ptr + current_size + 12)) + 2) = 0;
-	  }
-	}
-	if (*(int*)(ptr + current_size + 8) != 0)
-	{
-      if (*(int*)(ptr + current_size + 12) != 0)
-	  {
-		*((int*)(*(int*)(ptr + current_size + 8)) + 3) = *(int*)(ptr + current_size + 12);
-	  }
-	  else
-	  {
-		*((int*)(*(int*)(ptr + current_size + 8)) + 3) = 0;
-	  }
-	}
-
-
-    //printf("mm_free case4 debug3\n");
-	/*if ((lst_start_free >= ptr && lst_start_free <= ptr + current_size + next_size) || (lst_start_free >= ptr - prev_size && lst_start_free <= ptr + current_size))
-	{
-	  *(int*)(lst_start_free + 8) = */
-	/*if (lst_free_root_temp != NULL)
-	{
-      *(int*)(lst_free_root_temp + 12) = (int)lst_start_free;
-	}*/
-
-	if (lst_free_root_temp >= ptr && lst_free_root_temp <= ptr + current_size + next_size) // When lst_free_root_temp is third block merged.
-	{
-	  int temp_value = *(int*)(ptr + current_size + 8);
-	  if ((void*)temp_value >= ptr - prev_size && (void*)temp_value <= ptr) // When lst_free_root_temp is third block but, its next is first block.
-	  {
-		*(int*)(lst_start_free + 8) = *(int*)(ptr - prev_size + 8);
-	  }
-	  else
-	  {
-	    *(int*)(lst_start_free + 8) = *(int*)(ptr + current_size + 8);
-	  }
-	  
-	  if (*(int*)(lst_free_root_temp + 8) != 0) // In this case, lst_free_root_temp is third block, we set the prev pointer of that block's next block to point current(merged) block.
-	  {
-		*(int*)((void*)(*(int*)(lst_free_root_temp + 8)) + 12) = (int)lst_start_free;
-	  }
-	}
-	else if (lst_free_root_temp >= ptr - prev_size && lst_free_root_temp <= ptr) // when lst_free_root_temp is first block merged.
-	{
-	  int temp_value = *(int*)(ptr - prev_size + 8);
-	  if ((void*)temp_value >= ptr && (void*)temp_value <= ptr + current_size + next_size) // When lst_free_root_temp is first block but, its next is third block.
-	  {
-		*(int*)(lst_start_free + 8) = *(int*)((void*)temp_value + 8);
-	  }
-	  else
-	  {
-	  	*(int*)(lst_start_free + 8) = *(int*)(ptr - prev_size + 8);
-	  }
-
-	  if (*(int*)(lst_free_root_temp + 8) != 0) // In this case, lst_free_root_temp is first block, we set the prev pointer of that block's next block to point current(merged) block.
-	  {
-		*(int*)((void*)(*(int*)(lst_free_root_temp + 8)) + 12) = (int)lst_start_free;
-	  }
-	}
-	else
-	{
-	  *(int*)(lst_start_free + 8) = (int)lst_free_root_temp;
-	  if (lst_free_root_temp != NULL)
-	  {
-		*(int*)(lst_free_root_temp + 12) = (int)lst_start_free;
-	  }
-	}
-    *(int*)(lst_start_free + 12) = 0;
-    //printf("mm_free case4 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
-  }
-  //else if ((((*(int*)ptr) & 3) == 1) && (((*(int*)(ptr - 8)) & 3) == 3) && ((ptr + (*(int*)ptr & -8)) == lst_end) && (ptr != lst_start)) // Case 5 : block prev is allocated and ptr is end of list.
-  else if ((current_header == 1) && (prev_header == 3) && (ptr != lst_start))
-  {
-    //printf("mm_free case5 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
-    int current_size = ((*(int*)ptr) & -8);
-    int prev_size = ((*(int*)(ptr - 8)) & -8);
-    lst_free_root_temp = lst_start_free;
-    lst_start_free = ptr;
-    *(int*)(lst_start_free + 8) = (int)lst_free_root_temp;
-    *(int*)(lst_start_free + 12) = 0;
-    (*(int*)ptr) = current_size + 0;
-    (*(int*)(ptr + current_size - 8)) = current_size + 0;
-    (*(int*)(ptr - prev_size)) = ((*(int*)(ptr - prev_size)) & -3);
-    (*(int*)(ptr - 8)) = ((*(int*)(ptr - 8)) & -3);
-	if (lst_free_root_temp != NULL)
-	{
-	  *(int*)(lst_free_root_temp + 12) = (int)lst_start_free;
-	}
-    //printf("Free check : %d, prev_block allocated : %d\n", (*(int*)ptr)&1, (*(int*)(ptr - prev_size) & 1));
-  }
-  //else if ((((*(int*)ptr) & 3) == 1) && (((*(int*)(ptr - 8)) & 3) == 2) && ((ptr + (*(int*)ptr & -8)) == lst_end) && (ptr != lst_start)) // Case 6 : block prev is free and ptr is end of list.
-  else if ((current_header == 1) && (prev_header == 2) && (ptr != lst_start))
-  {
-    //printf("mm_free case6 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
-    int current_size = ((*(int*)ptr) & -8);
-    int prev_size = ((*(int*)(ptr - 8)) & -8);
-    lst_free_root_temp = lst_start_free;
-    lst_start_free = ptr - prev_size;
-    if (*(int*)(lst_start_free + 12) != 0)
-	{
-	  if (*(int*)(lst_start_free + 8) != 0)
-	  {
-	    *((int*)(*(int*)(lst_start_free + 12)) + 2) = *(int*)(lst_start_free + 8); // Set the next pointer of prev block's previous free block to prev block's next free block.
-	  }
-	  else
-	  {
-		*((int*)(*(int*)(lst_start_free + 12)) + 2) = 0;
-	  }
-	}
-	if (*(int*)(lst_start_free + 8) != 0)
-	{
-	  if (*(int*)(lst_start_free + 12) != 0)
-	  {
-	    *((int*)(*(int*)(lst_start_free + 8)) + 3) = *(int*)(lst_start_free + 12); // Set the prev pointer of prev block's next free block to prev block's previous free block.
-	  }
-	  else
-	  {
-		*((int*)(*(int*)(lst_start_free + 8)) + 3) = 0;
-	  }
-	}
-    
-    (*(int*)(ptr - prev_size)) = (prev_size + current_size + 0);
-    (*(int*)(ptr + current_size - 8)) = (prev_size + current_size + 0);
-    /*if (lst_free_root_temp >= ptr - prev_size && lst_free_root_temp <= ptr)
+    if ((*(int*)ptr & 1) != 1)
     {
-      *(int*)(lst_start_free + 8) = *(int*)(lst_start_free + 8);
-      if ()
-    }*/
-    
-    if (lst_free_root_temp != NULL)
-    {
-      if (lst_free_root_temp >= ptr - prev_size && lst_free_root_temp <= ptr) // In this case, prev block is lst_free_root_temp.
-      {
-        if ((void*)(*(int*)(lst_free_root_temp + 8)) != NULL) // If next pointer of prev block is not null, set the current(merged) block's next pointer to that value. Since that next free block's prev pointer is already pointing to prev block, we don't have to modify it.
-        {
-          //*(int*)(lst_start_free + 8) = *(int*)(*(int*)(lst_free_root_temp + 8) + 8);
-		  *(int*)(lst_start_free + 8) = *(int*)(lst_free_root_temp + 8);
-		  *(int*)((void*)(*(int*)(lst_free_root_temp + 8)) + 12) = (int)lst_start_free;
-        }
-        else // Next pointer of prev block is null.
-        {
-          *(int*)(lst_start_free + 8) = 0;
-        }
-      }
-      else // In this case, prev block is not lst_free_root_temp;
-      {
-        *(int*)(lst_start_free + 8) = (int)lst_free_root_temp; // Set the next pointer of current(merged) block.
-        *(int*)(lst_free_root_temp + 12) = (int)lst_start_free; // Set the prev pointer of lst_free_root_temp to current(merged) block.
-      }
+	return;
     }
-    *(int*)(lst_start_free + 12) = 0; // Set the prev pointer of current(merged) block to NULL.
+    int current_header = (*(int*)ptr) & 3;
+    int current_size = (get_size(ptr));
+    int prev_header = -1;
+    int prev_size = -1;
+    if (ptr != lst_start)
+    {
+	prev_header = (*(int*)(ptr - 8)) & 3;
+	prev_size = (*(int*)(ptr - 8) & -8);
+    }
+    int next_header = -1;
+    int next_size = -1;
+    if ((ptr + (get_size(ptr))) != lst_end)
+    {
+	next_header = (*(int*)(ptr + (get_size(ptr))) & 3);
+	next_size = (*(int*)(ptr + (get_size(ptr))) & -8);
+    }
     
-    //printf("mm_free case6 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
-  }
-  else if (((*(int*)ptr & 1) == 1) && (ptr == lst_start) && ((ptr + (*(int*)ptr & -8)) != lst_end) && (((*(int*)(ptr + (*(int*)ptr & -8))) & 1) == 1))  // Case 7 : ptr is start of list and next block is allocated.
-  //else if ((current_header == 1) && (current_block_end != lst_end) && (ptr == lst_start) && (((*(int*)(ptr + (*(int*)ptr & -8))) & 1) == 1))
-  {
-    //printf("mm_free case7 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
-    int current_size = ((*(int*)ptr) & -8);
-    lst_free_root_temp = lst_start_free;
-    lst_start_free = ptr;
-    lst_end_free = NULL;
-    *(int*)(ptr + 8) = (int)lst_free_root_temp;
-    *(int*)(ptr + 12) = 0;
-	if (lst_free_root_temp != NULL)
-	{
-	  *(int*)(lst_free_root_temp + 12) = (int)lst_start_free;
-	}
-    (*(int*)ptr) = current_size + 2;
-    (*(int*)(ptr + current_size - 8)) = current_size + 2;
-  }
-  else if (((*(int*)ptr & 3) == 1) && (ptr == lst_start) && ((ptr + (*(int*)ptr & -8)) != lst_end) && (((*(int*)(ptr + (*(int*)ptr & -8))) & 1) == 0)) // Case 8 :ptr is start of list and next block is free.
-  {
-    //printf("mm_free case8 - ptr : %p, lst_start_free : %p, lst_end_free : %p\n", ptr, lst_start_free, lst_end_free);
-    int current_size = ((*(int*)ptr) & -8);
-    int next_size = ((*(int*)(ptr + current_size)) & -8);
-	lst_free_root_temp = lst_start_free;
-    lst_start_free = ptr;
-	//printf("mm_free case8 - Debug 1\n");
-	if (*(int*)(lst_start_free + current_size + 12) != 0)
-	{
-	  if (*(int*)(lst_start_free + current_size + 8) != 0)
-	  {
-		*((int*)(*(int*)(lst_start_free + current_size + 12)) + 2) = *(int*)(lst_start_free + current_size + 8);
-	  }
-	  else
-	  {
-		*((int*)(*(int*)(lst_start_free + current_size + 12)) + 2) = 0;
-	  }
-	}
-	//printf("mm_free case8 - Debug 2\n");
-	if (*(int*)(lst_start_free + current_size + 8) != 0)
-	{
-	  //printf("mm_free case8 - Debug 2-1\n");
-      if (*(int*)(lst_start_free + current_size + 12) != 0)
-	  {
-		*((int*)(*(int*)(lst_start_free + current_size + 8)) + 3) = *(int*)(lst_start_free + current_size + 12);
-	  }
-	  else
-	  {
-	    //printf("mm_free case8 - Debug 2-2, Value of *(int*)(lst_start_free + current_size + 8) : %x\n", *(int*)(lst_start_free + current_size + 8));
-		*((int*)(*(int*)(lst_start_free + current_size + 8)) + 3) = 0;
-	  }
-	}
-	//printf("mm_free case8 - Debug 3\n");
-    *(int*)ptr = (current_size + next_size) + (*(int*)(ptr + current_size) & 2); // Set the header of coalesced block.
-    *(int*)(ptr + current_size + next_size - 8) = (current_size + next_size) + (*(int*)(ptr + current_size) & 2); // Set the footer of coalesced block.
-	if (lst_free_root_temp >= ptr && lst_free_root_temp <= ptr + current_size + next_size) // When the next block(free) is the starting free block.
-	{
-	  *(int*)(ptr + 8) = *(int*)(ptr + current_size + 8);
-	  if (*(int*)(lst_free_root_temp + 8) != 0) // In this case, set the prev pointer of next block's next block to point to lst_start_free
-	  {
-		*(int*)((void*)(*(int*)(lst_free_root_temp + 8)) + 12) = (int)lst_start_free;
-	  }
-	}
-	else // When the next block(free) is not the starting free block.
-	{
-	  *(int*)(ptr + 8) = (int)lst_free_root_temp;
-	  if (lst_free_root_temp != NULL)
-	  {
-		*(int*)(lst_free_root_temp + 12) = (int)lst_start_free;
-	  }
-	}
-	/*if (lst_free_root_temp != NULL)
-	{
-	  *(int*)(lst_free_root_temp + 12) = (int)lst_start_free;
-	}*/
-    *(int*)(ptr + 12) = 0;
-    //printf("mm_free case8 - FREE Block Validating - prev free block : %x, next free block : %x\n", *(int*)(lst_start_free + 12), *(int*)(lst_start_free + 8));
-  }
-  else // Case 9 : ptr is the only block allocated.
-  {
-    //printf("mm_free case9 - ptr : %p, lst_start_free : %p, lst_end_Free : %p\n", ptr, lst_start_free, lst_end_free);
-    int current_size = ((*(int*)ptr) & -8);
-    lst_start_free = ptr;
-    *(int*)ptr = current_size + 0;
-    *(int*)(ptr + current_size - 8) = current_size + 0;
-    *(int*)(ptr + 8) = 0;
-    *(int*)(ptr + 12) = 0;
-  }
+    if ((current_header == 3) && (prev_header == 3) && (next_header != -1)) // Case 1 : prev - allocated, current - allocated, next - allocated
+    {
+	printf("mm_free - Case 1\n");
+	*(int*)ptr = (get_size(ptr)) + 2;
+	*(int*)(ptr + (get_size(ptr)) - 8) = (get_size(ptr)) + 2;
+	*(int*)(ptr - prev_size) = prev_size + 1;
+	*(int*)(ptr - 8) = prev_size + 1;
+	insert(ptr, tree_root);
+    }
+    else if ((current_header == 3) && (prev_header == 2) && (next_header != -1)) // Case 2 : prev - free, current - allocated, next - allocated
+    {
+	printf("mm_free - Case 2\n");
+	lst_start_free = ptr - prev_size;
+	delete(lst_start_free);
+	*(int*)lst_start_free = current_size + prev_size + 2;
+	*(int*)(lst_start_free + current_size + prev_size - 8) = current_size + prev_size + 2;
+	insert(lst_start_free, tree_root);
+    }
+    else if ((current_header == 1) && (prev_header == 3) && (next_header != -1)) // Case 3: prev - allocated, current - allocated, next - free
+    {
+	printf("mm_free - Case 3\n");
+	lst_free_next_temp = ptr + current_size;
+	delete(lst_free_next_temp);
+	*(int*)ptr = current_size + next_size + next_header;
+	*(int*)(ptr + current_size + next_size - 8) = current_size + next_size + next_header;
+	*(int*)(ptr - prev_size) = (*(int*)(ptr - prev_size) & -8) + 1;
+	*(int*)(ptr - 8) = (*(int*)(ptr - 8) & -8) + 1;
+	insert(ptr, tree_root);
+    }
+    else if ((current_header == 1) && (prev_header == 2) && (next_header != -1)) // Case 4 : prev - free, current - allocated, next - free
+    {
+	printf("mm_free - Case 4\n");
+	lst_free_prev_temp = ptr - prev_size;
+	lst_free_next_temp = ptr + current_size;
+	delete(lst_free_prev_temp);
+	delete(lst_free_next_temp);
+	lst_start_free = ptr - prev_size;
+	*(int*)lst_start_free = prev_size + current_size + next_size + next_header;
+	*(int*)(lst_start_free + prev_size + current_size + next_size - 8) = prev_size + current_size + next_size + next_header;
+	insert(lst_start_free, tree_root);
+    }
+    else if ((current_header == 1) && (prev_header == 3) && (next_header == -1)) // Case 5 : prev - allocated, current - allocated, next - X
+    {
+	printf("mm_free - Case 5\n");
+	lst_free_prev_temp = ptr - prev_size;
+	*(int*)ptr = current_size + 0;
+	*(int*)(ptr + current_size - 8) = current_size + 0;
+	*(int*)lst_free_prev_temp = (*(int*)lst_free_prev_temp) & -3;
+	*(int*)(lst_free_prev_temp + prev_size - 8) = (*(int*)(lst_free_prev_temp + prev_size - 8) & -3);
+	insert(ptr, tree_root);
+    }
+    else if ((current_header == 1) && (prev_header == 2) && (next_header == -1)) // Case 6 : prev - free, current - allocated, next - X
+    {
+	printf("mm_free - Case 6\n");
+	lst_free_prev_temp = ptr - prev_size;
+	delete(lst_free_prev_temp);
+	lst_start_free = lst_free_prev_temp;
+	*(int*)lst_start_free = prev_size + current_size + 0;
+	*(int*)(lst_start_free + prev_size + current_size - 8) = prev_size + current_size + 0;
+	insert(lst_start_free, tree_root);
+    }
+    else if ((current_header == 3) && (prev_header == -1) && (next_header != -1)) // Case 7 : prev - X, current - allocated, next - allocated
+    {
+	printf("mm_free - Case 7\n");
+	*(int*)ptr = current_size + 2;
+	*(int*)(ptr + current_size - 8) = current_size + 2;
+	insert(ptr, tree_root);
+    }
+    else if ((current_header == 1) && (prev_header == -1) && (next_header != -1)) // Case 8 : prev - X, current - allocated, next - free
+    {
+	printf("mm_free - Case 8\n");
+	lst_free_next_temp = ptr + current_size;
+	delete(lst_free_next_temp);
+	lst_start_free = ptr;
+	*(int*)lst_start_free = current_size + next_size + next_header;
+	*(int*)(lst_start_free + current_size + next_size - 8) = current_size + next_size + next_header;
+	insert(lst_start_free, tree_root);
+    }
+    else // Case 9 : prev - X, current - allocated, next - X
+    {
+	printf("mm_free - Case 9\n");
+	*(int*)ptr = current_size + 0;
+	*(int*)(ptr + current_size - 8) = current_size + 0;
+	insert(ptr, tree_root);
+    }
+    //inorder_traverse(tree_root);
     
-  ptr = ptr + 8;
-  /* DON't MODIFY THIS STAGE AND LEAVE IT AS IT WAS */
-  if (gl_ranges)
-    remove_range(gl_ranges, ptr);
+    ptr = ptr + 8;
+    /* DON't MODIFY THIS STAGE AND LEAVE IT AS IT WAS */
+    if (gl_ranges)
+	remove_range(gl_ranges, ptr);
+
 }
+
 
 /*
  * mm_realloc - empty implementation; YOU DO NOT NEED TO IMPLEMENT THIS
@@ -1564,5 +1288,6 @@ void mm_exit(void)
   lst_end = NULL;
   lst_tracker = NULL;
   lst_current = NULL;
+  tree_root = NULL;
 }
 
