@@ -1412,7 +1412,8 @@ void* mm_malloc(size_t size)
 	}
 	else
 	{
-		//printf("Allocating case2 - get_size(found_node) > newsize + 24\n");
+	    /*
+	    //printf("Allocating case2 - get_size(found_node) > newsize + 24\n");
 	    if (found_node != lst_start) // If found_node is not the start of block list, pre block's next block allocation bit of header and footer should be changed.
 	    {
 		int prev_size = *(int*)(found_node - 8) & -8;
@@ -1429,6 +1430,26 @@ void* mm_malloc(size_t size)
 	    *(int*)remaining_block_temp = remaining_block_size + (*(int*)(remaining_block_temp + remaining_block_size - 8) & 2);
 	    *(int*)(remaining_block_temp + remaining_block_size - 8) = remaining_block_size + (*(int*)(remaining_block_temp + remaining_block_size - 8) & 2);
 
+	    insert(remaining_block_temp, tree_root);
+	    */
+	    int remaining_block_size = (get_size(found_node)) - newsize;
+	    lst_current = found_node + remaining_block_size;
+	    remaining_block_temp = found_node;
+
+	    *(int*)lst_current = (newsize & -8) + 1;
+	    *(int*)(lst_current + newsize - 8) = (newsize & -8) + 1;
+
+	    *(int*)remaining_block_temp = remaining_block_size + 2;
+	    *(int*)(remaining_block_temp + remaining_block_size - 8) = remaining_block_size + 2;
+	    if ((lst_current + get_size(lst_current)) != lst_end) 
+	    {
+		int next_allocated = (*(int*)(lst_current + (get_size(lst_current))) & 1);
+		if (next_allocated == 1)
+		{
+		    *(int*)lst_current = (*(int*)lst_current) | 2;
+		    *(int*)(lst_current + (get_size(lst_current)) - 8) = (*(int*)(lst_current + (get_size(lst_current)) - 8)) | 2;
+		}
+	    }
 	    insert(remaining_block_temp, tree_root);
 	}
     }
