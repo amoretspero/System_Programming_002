@@ -952,6 +952,7 @@ void delete(void* ptr)
 		else // Case 8 : ptr is not root and has both child.
 		{
 			//printf("delete - Case 8 - ptr : %p, size : %d\n", ptr, get_size(ptr));
+			//inorder_traverse(tree_root);
 			delete_inorder_pred_temp = find_inorder_pred(ptr);
 			int color_ptr = get_color(ptr);
 			int color_delete_inorder_pred_temp = get_color(delete_inorder_pred_temp);
@@ -1414,11 +1415,11 @@ void tree_check(void* ptr, int black)
 
 static float alpha = 1.0;
 static float heuristic_size = 0.0;
-static float heuristic_weight = 0.7;
-static float new_weight = 0.3;
+static float heuristic_weight = 0.8;
+static float new_weight = 0.2;
 static float heuristic_pvalue = 0.05;
 static int alloc_num = 0;
-static int alloc_num_min = 16;
+static int alloc_num_min = 8;
 void* heuristic_alloc_temp;
 void heuristic_allocation (int size)
 {
@@ -1426,22 +1427,25 @@ void heuristic_allocation (int size)
     int num = 1;
     while (num > 0)
     {
-	heuristic_alloc_temp = mem_sbrk(size);
-	*(int*)heuristic_alloc_temp = size + 0;
-	*(int*)(heuristic_alloc_temp + size - 8) = size + 0;
-	if (lst_start != lst_end)
-	{
-	    int prev_size = (*(int*)(heuristic_alloc_temp - 8)) & -8;
-	    *(int*)(heuristic_alloc_temp - prev_size) = (*(int*)(heuristic_alloc_temp - prev_size)) & -3;
-	    *(int*)(heuristic_alloc_temp - 8) = (*(int*)(heuristic_alloc_temp - 8)) & -3;
-	}
-	insert(heuristic_alloc_temp, tree_root);
-	num = num - 1;
+		heuristic_alloc_temp = mem_sbrk(size);
+		*(int*)heuristic_alloc_temp = size + 0;
+		*(int*)(heuristic_alloc_temp + size - 8) = size + 0;
+		//if (lst_start != lst_end)
+		if (heuristic_alloc_temp != lst_start)
+		{
+	    	int prev_size = (*(int*)(heuristic_alloc_temp - 8)) & -8;
+	    	*(int*)(heuristic_alloc_temp - prev_size) = (*(int*)(heuristic_alloc_temp - prev_size)) & -3;
+	    	*(int*)(heuristic_alloc_temp - 8) = (*(int*)(heuristic_alloc_temp - 8)) & -3;
+		}
+		lst_end = heuristic_alloc_temp + get_size(heuristic_alloc_temp);
+		insert(heuristic_alloc_temp, tree_root);
+		num = num - 1;
     }
     heuristic_alloc_temp = NULL;
 }
 void calculate_heuristic (float size, float heur)
 {
+	//printf("calculate_heuristic START\n");
     alloc_num = alloc_num + 1;
     float prev_heuristic_size = heuristic_size;
     heuristic_size = ((heuristic_size * heuristic_weight) + (size * new_weight));
@@ -1449,13 +1453,14 @@ void calculate_heuristic (float size, float heur)
     float abs_diff_alpha = 1.0 - alpha;
     if (abs_diff_alpha < 0.0)
     {
-	abs_diff_alpha = 0.0 - abs_diff_alpha;
+		abs_diff_alpha = 0.0 - abs_diff_alpha;
     }
     if (abs_diff_alpha < heuristic_pvalue && alloc_num >= alloc_num_min)
     {
-	heuristic_allocation((int)size);
-	alloc_num = 0;
+		heuristic_allocation((int)size);
+		alloc_num = 0;
     }
+	//printf("calculate_heuristic END\n");
 }
 
 
@@ -1633,7 +1638,9 @@ void* mm_malloc(size_t size)
 	*(int*)(lst_current - prev_size) = (*(int*)(lst_current - prev_size)) | 2;
 
 	lst_end = lst_current + newsize;
+	calculate_heuristic((float)newsize, heuristic_size);
     }
+	//calculate_heuristic((float)newsize, heuristic_size);
   }
   //calculate_heuristic((float)newsize, heuristic_size);
   //printf("mm_malloc END\n");
