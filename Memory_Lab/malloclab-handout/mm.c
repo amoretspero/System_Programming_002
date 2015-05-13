@@ -1415,16 +1415,24 @@ void tree_check(void* ptr, int black)
 
 static float alpha = 1.0;
 static float heuristic_size = 0.0;
-static float heuristic_weight = 0.8;
-static float new_weight = 0.2;
-static float heuristic_pvalue = 0.05;
+static float heuristic_size_prev = 0.0;
+static float heuristic_weight_prev = 0.0;
+static float heuristic_weight = 0.75;
+static float heuristic_weight_alpha = 0.75;
+static float new_weight = 0.25;
+static float new_weight_alpha = 0.25;
+static float heuristic_pvalue = 0.045;
 static int alloc_num = 0;
-static int alloc_num_min = 8;
+static int alloc_num_min = 4;
+static int alloc_num_min_init = 8;
+static int heuristic_init = 1;
+static int size_multiplier = 1;
 void* heuristic_alloc_temp;
-void heuristic_allocation (int size)
+void heuristic_allocation (int alloc_size)
 {
     //printf("heuristic_allocation\n");
     int num = 1;
+	int size = alloc_size * size_multiplier;
     while (num > 0)
     {
 		heuristic_alloc_temp = mem_sbrk(size);
@@ -1447,19 +1455,33 @@ void calculate_heuristic (float size, float heur)
 {
 	//printf("calculate_heuristic START\n");
     alloc_num = alloc_num + 1;
-    float prev_heuristic_size = heuristic_size;
-    heuristic_size = ((heuristic_size * heuristic_weight) + (size * new_weight));
-    alpha = (alpha * heuristic_weight) + ((heuristic_size / prev_heuristic_size) * new_weight);
+    float heuristic_size_prev_temp = heuristic_size;
+    heuristic_size = ((heuristic_size * heuristic_weight) + (heuristic_size_prev * heuristic_weight_prev) + (size * new_weight));
+    alpha = (alpha * heuristic_weight_alpha) + ((heuristic_size / heuristic_size_prev_temp) * new_weight_alpha);
     float abs_diff_alpha = 1.0 - alpha;
     if (abs_diff_alpha < 0.0)
     {
 		abs_diff_alpha = 0.0 - abs_diff_alpha;
     }
-    if (abs_diff_alpha < heuristic_pvalue && alloc_num >= alloc_num_min)
-    {
-		heuristic_allocation((int)size);
-		alloc_num = 0;
-    }
+
+	if (heuristic_init == 1)
+	{
+		if (abs_diff_alpha < heuristic_pvalue && alloc_num >= alloc_num_min_init)
+		{
+			heuristic_allocation((int)size);
+			alloc_num = 0;
+			heuristic_init = 0;
+		}
+	}
+	else
+	{
+    	if (abs_diff_alpha < heuristic_pvalue && alloc_num >= alloc_num_min)
+   	 	{
+			heuristic_allocation((int)size);
+			alloc_num = 0;
+    	}
+	}
+	heuristic_size_prev = heuristic_size_prev_temp;
 	//printf("calculate_heuristic END\n");
 }
 
@@ -1829,6 +1851,7 @@ void mm_exit(void)
   tree_root = NULL;
   heuristic_size = 0.0;
   alloc_num = 0;
+  heuristic_init = 1;
 }
 
 
