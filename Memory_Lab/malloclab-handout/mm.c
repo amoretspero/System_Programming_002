@@ -1276,25 +1276,178 @@ void inorder_traverse(void* tree)
     {
 	if (left_child(tree) == NULL)
 	{
-	    //printf("Color : %d, Size : %d, Address : %p, left child : %p, right child : %p, parent : %p\n", get_color(tree), get_size(tree), tree, left_child(tree), right_child(tree), parent(tree));
+	    printf("Color : %d, Size : %d, Address : %p, left child : %p, right child : %p, parent : %p\n", get_color(tree), get_size(tree), tree, left_child(tree), right_child(tree), parent(tree));
 	    if (right_child(tree) != NULL)
 	    {
-		//inorder_traverse(right_child(tree));
+		inorder_traverse(right_child(tree));
 	    }
 	}
 	else
 	{
-	    //inorder_traverse(left_child(tree));
-	    //printf("Color : %d, Size : %d, Address : %p, left child : %p, right child : %p, parent : %p\n", get_color(tree), get_size(tree), tree, left_child(tree), right_child(tree), parent(tree));
+	    inorder_traverse(left_child(tree));
+	    printf("Color : %d, Size : %d, Address : %p, left child : %p, right child : %p, parent : %p\n", get_color(tree), get_size(tree), tree, left_child(tree), right_child(tree), parent(tree));
 	    if (right_child(tree) != NULL)
 	    {
-		//inorder_traverse(right_child(tree));
+		inorder_traverse(right_child(tree));
 	    }
 	}
     }
 }
+static int black_num = 0;
+void* tree_check_temp;
+void* tree_check_root_temp;
+void tree_check(void* ptr, int black);
+void tree_checker()
+{
+    tree_check_root_temp = tree_root;
+    tree_check_temp = tree_root;
+    while (tree_check_temp != NULL)
+    {
+	if (get_color(tree_check_temp) == 0)
+	{
+	    black_num++;
+	}
+	tree_check_temp = left_child(tree_check_temp);
+    }
+    tree_root = tree_check_root_temp;
 
+    tree_check(tree_root, 0);
+    black_num = 0;
+}
+void tree_check(void* ptr, int black)
+{
+    if (tree_root == ptr && get_color(ptr) != 0)
+    {
+	printf("VIOLATED!!!\n");
+	inorder_traverse(tree_root);
+	return;
+    }
+    if (get_color(ptr) == 0)
+    {
+	//black_num++
+	if (left_child(ptr) != NULL && right_child(ptr) != NULL)
+	{
+	    tree_check((left_child(ptr)), (black + 1));
+	    tree_check((right_child(ptr)), (black + 1));
+	}
+	else if (left_child(ptr) != NULL && right_child(ptr) == NULL)
+	{
+	    tree_check((left_child(ptr)), (black + 1));
+	}
+	else if (left_child(ptr) == NULL && right_child(ptr) != NULL)
+	{
+	    tree_check((right_child(ptr)), (black + 1));
+	}
+	else
+	{
+	    if (black_num != black+1)
+	    {
+		printf("VIOLATED!!!\n");
+		inorder_traverse(tree_root);
+		return;
+	    }
+	    else
+	    {
+		return;
+	    }
+	}
+    }
+    else
+    {
+	int left_child_color = -1;
+	int right_child_color = -1;
+	if (left_child(ptr) != NULL)
+	{
+	    left_child_color = get_color((left_child(ptr)));
+	}
+	if (right_child(ptr) != NULL)
+	{
+	    right_child_color = get_color((right_child(ptr)));
+	}
+	if ((left_child_color == -1 || left_child_color == 0) && (right_child_color == -1 && right_child_color == 0))
+	{
+	    if (left_child_color == 0 && right_child_color == 0)
+	    {
+		tree_check(left_child(ptr), black);
+		tree_check(right_child(ptr), black);
+	    }
+	    else if (left_child_color == 0 && right_child_color == -1)
+	    {
+		tree_check(left_child(ptr), black);
+	    }
+	    else if (left_child_color == -1 && right_child_color == 0)
+	    {
+		tree_check(right_child(ptr), black);
+	    }
+	    else
+	    {
+		if (black_num != black)
+		{
+		    printf("VIOLATED!!!\n");
+		    inorder_traverse(tree_root);
+		    return;
+		}
+		else
+		{
+		    return;
+		}
+	    }
+	}
+	else
+	{
+	    printf("VIOLATED!!!\n");
+	    inorder_traverse(tree_root);
+	    return;
+	}
+    }
+    return;
+}
 
+static float alpha = 1.0;
+static float heuristic_size = 0.0;
+static float heuristic_weight = 0.7;
+static float new_weight = 0.3;
+static float heuristic_pvalue = 0.05;
+static int alloc_num = 0;
+static int alloc_num_min = 16;
+void* heuristic_alloc_temp;
+void heuristic_allocation (int size)
+{
+    //printf("heuristic_allocation\n");
+    int num = 1;
+    while (num > 0)
+    {
+	heuristic_alloc_temp = mem_sbrk(size);
+	*(int*)heuristic_alloc_temp = size + 0;
+	*(int*)(heuristic_alloc_temp + size - 8) = size + 0;
+	if (lst_start != lst_end)
+	{
+	    int prev_size = (*(int*)(heuristic_alloc_temp - 8)) & -8;
+	    *(int*)(heuristic_alloc_temp - prev_size) = (*(int*)(heuristic_alloc_temp - prev_size)) & -3;
+	    *(int*)(heuristic_alloc_temp - 8) = (*(int*)(heuristic_alloc_temp - 8)) & -3;
+	}
+	insert(heuristic_alloc_temp, tree_root);
+	num = num - 1;
+    }
+    heuristic_alloc_temp = NULL;
+}
+void calculate_heuristic (float size, float heur)
+{
+    alloc_num = alloc_num + 1;
+    float prev_heuristic_size = heuristic_size;
+    heuristic_size = ((heuristic_size * heuristic_weight) + (size * new_weight));
+    alpha = (alpha * heuristic_weight) + ((heuristic_size / prev_heuristic_size) * new_weight);
+    float abs_diff_alpha = 1.0 - alpha;
+    if (abs_diff_alpha < 0.0)
+    {
+	abs_diff_alpha = 0.0 - abs_diff_alpha;
+    }
+    if (abs_diff_alpha < heuristic_pvalue && alloc_num >= alloc_num_min)
+    {
+	heuristic_allocation((int)size);
+	alloc_num = 0;
+    }
+}
 
 
 /* 
@@ -1339,6 +1492,8 @@ int mm_init(range_t **ranges)
   lst_current = NULL;
   remaining_block_temp = NULL;
   tree_root = NULL;
+  heuristic_size = 0.0;
+  alloc_num = 0;
 
   /* Initially, lst points 8 bytes away from start of heap. lst_start and lst_end points to same address as lst. */
   lst_current = mem_sbrk(16);
@@ -1382,6 +1537,8 @@ void* mm_malloc(size_t size)
     (*(int*)(lst_current + (newsize - 8))) = (newsize & -8) + 1;
     lst_end = lst_current + newsize;
     lst_start = lst_current;
+    heuristic_size = newsize - 24;
+    calculate_heuristic((float)newsize, heuristic_size);
     //printf("mm_malloc - new allocation - lst_start : %p, lst_end : %p, allocated : %d\n", lst_start, lst_end, ((*(int*)lst_start) & 1));
   }
   else // Allocating case 2 : Allocated blocks exists. Free or allocated. Find 'free and allocatable size' block. If not exists, allocate new block at the end of list.
@@ -1469,6 +1626,7 @@ void* mm_malloc(size_t size)
 	lst_end = lst_current + newsize;
     }
   }
+  //calculate_heuristic((float)newsize, heuristic_size);
   //printf("mm_malloc END\n");
   //list_print(lst_start);
   //printf("Allocation - address : %p, size : %d, actual size : %d\n", lst_current, newsize, get_size(lst_current));
@@ -1599,7 +1757,9 @@ void mm_free(void* ptr)
 	*(int*)(ptr + current_size - 8) = current_size + 0;
 	insert(ptr, tree_root);
     }
-    ////inorder_traverse(tree_root);
+    tree_checker();
+    black_num = 0;
+    //inorder_traverse(tree_root);
     //printf("mm_free END\n");
     //list_print(lst_start);
     ptr = ptr + 8;
@@ -1634,6 +1794,7 @@ void mm_exit(void)
       mm_free((void*)((char*)lst_tracker + 8));
     }
   }
+  inorder_traverse(tree_root);
   lst_start_free = NULL;
   lst_end_free = NULL;
   lst_tracker_free = NULL;
@@ -1646,6 +1807,8 @@ void mm_exit(void)
   lst_tracker = NULL;
   lst_current = NULL;
   tree_root = NULL;
+  heuristic_size = 0.0;
+  alloc_num = 0;
 }
 
 
