@@ -1,0 +1,1082 @@
+Team Name:2013-11438
+Member 1 :Jiung Hahm:2013-11438
+Measuring performance with gettimeofday().
+
+Testing mm malloc
+Reading tracefile: short1-bal.rep
+Checking mm_malloc for correctness, mm_malloc START
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 12288, Allocated? 0
+efficiency, mm_malloc START
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 12288, Allocated? 0
+and performance.
+mm_malloc START
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 12288, Allocated? 0
+mm_malloc START
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 12288, Allocated? 0
+mm_malloc START
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 12288, Allocated? 0
+mm_malloc START
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 12288, Allocated? 0
+mm_malloc START
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 12288, Allocated? 0
+mm_malloc START
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 12288, Allocated? 0
+mm_malloc START
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 12288, Allocated? 0
+mm_malloc START
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 12288, Allocated? 0
+mm_malloc START
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 12288, Allocated? 0
+mm_malloc START
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 2056, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 1992, Allocated? 0
+Address : 0xf35a3028, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 6080, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 1
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free START
+Address : 0xf35a2018, size : 2056, Allocated? 0
+Address : 0xf35a2820, size : 64, Allocated? 1
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_free END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+mm_malloc END
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 2120, Allocated? 0
+Address : 0xf35a2860, size : 4088, Allocated? 1
+Address : 0xf35a3858, size : 1992, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free START
+Address : 0xf35a2018, size : 8200, Allocated? 0
+Address : 0xf35a4020, size : 4088, Allocated? 1
+mm_free END
+Address : 0xf35a2018, size : 12288, Allocated? 0
+
+Results for mm malloc:
+trace   valid   util      ops       secs   Kops
+ 0        yes    66%       12   0.000028    433
+Total            66%       12   0.000028    433
+
+Perf index = 46 (util) + 2 (thru) = 48/100
