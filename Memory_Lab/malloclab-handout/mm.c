@@ -1303,11 +1303,11 @@ void tree_checker()
     tree_check_temp = tree_root;
     while (tree_check_temp != NULL)
     {
-	if (get_color(tree_check_temp) == 0)
-	{
-	    black_num++;
-	}
-	tree_check_temp = left_child(tree_check_temp);
+		if (get_color(tree_check_temp) == 0)
+		{
+	    	black_num++;
+		}
+		tree_check_temp = left_child(tree_check_temp);
     }
     tree_root = tree_check_root_temp;
 
@@ -1318,87 +1318,96 @@ void tree_check(void* ptr, int black)
 {
     if (tree_root == ptr && get_color(ptr) != 0)
     {
-	printf("VIOLATED!!!\n");
-	inorder_traverse(tree_root);
-	return;
+		printf("\n==================================================\n");
+		printf("VIOLATED!!! (ROOT IS NOT BLACK) - tree root : %p\n", tree_root);
+		inorder_traverse(tree_root);
+		printf("==================================================\n");
+		return;
     }
     if (get_color(ptr) == 0)
     {
-	//black_num++
-	if (left_child(ptr) != NULL && right_child(ptr) != NULL)
-	{
-	    tree_check((left_child(ptr)), (black + 1));
-	    tree_check((right_child(ptr)), (black + 1));
-	}
-	else if (left_child(ptr) != NULL && right_child(ptr) == NULL)
-	{
-	    tree_check((left_child(ptr)), (black + 1));
-	}
-	else if (left_child(ptr) == NULL && right_child(ptr) != NULL)
-	{
-	    tree_check((right_child(ptr)), (black + 1));
-	}
-	else
-	{
-	    if (black_num != black+1)
-	    {
-		printf("VIOLATED!!!\n");
-		inorder_traverse(tree_root);
-		return;
-	    }
-	    else
-	    {
-		return;
-	    }
-	}
-    }
-    else
-    {
-	int left_child_color = -1;
-	int right_child_color = -1;
-	if (left_child(ptr) != NULL)
-	{
-	    left_child_color = get_color((left_child(ptr)));
-	}
-	if (right_child(ptr) != NULL)
-	{
-	    right_child_color = get_color((right_child(ptr)));
-	}
-	if ((left_child_color == -1 || left_child_color == 0) && (right_child_color == -1 && right_child_color == 0))
-	{
-	    if (left_child_color == 0 && right_child_color == 0)
-	    {
-		tree_check(left_child(ptr), black);
-		tree_check(right_child(ptr), black);
-	    }
-	    else if (left_child_color == 0 && right_child_color == -1)
-	    {
-		tree_check(left_child(ptr), black);
-	    }
-	    else if (left_child_color == -1 && right_child_color == 0)
-	    {
-		tree_check(right_child(ptr), black);
-	    }
-	    else
-	    {
-		if (black_num != black)
+		//black_num++
+		if (left_child(ptr) != NULL && right_child(ptr) != NULL)
 		{
-		    printf("VIOLATED!!!\n");
-		    inorder_traverse(tree_root);
-		    return;
+	    	tree_check((left_child(ptr)), (black + 1));
+	    	tree_check((right_child(ptr)), (black + 1));
+		}
+		else if (left_child(ptr) != NULL && right_child(ptr) == NULL)
+		{
+	    	tree_check((left_child(ptr)), (black + 1));
+		}
+		else if (left_child(ptr) == NULL && right_child(ptr) != NULL)
+		{
+	    	tree_check((right_child(ptr)), (black + 1));
 		}
 		else
 		{
-		    return;
+	    	if (black_num != black+1)
+	    	{
+				printf("\n==================================================\n");
+				printf("VIOLATED!!! (BLACK NODE NUMBER TO LEAFS ARE DIFFERENT)- tree_root : %p\n", tree_root);
+				inorder_traverse(tree_root);
+				printf("==================================================\n");
+				return;
+	    	}
+	    	else
+	    	{
+			return;
+	    	}
 		}
-	    }
-	}
-	else
-	{
-	    printf("VIOLATED!!!\n");
-	    inorder_traverse(tree_root);
-	    return;
-	}
+    }
+    else
+    {
+		int left_child_color = -1;
+		int right_child_color = -1;
+		if (left_child(ptr) != NULL)
+		{
+	    	left_child_color = get_color((left_child(ptr)));
+		}
+		if (right_child(ptr) != NULL)
+		{
+	    	right_child_color = get_color((right_child(ptr)));
+		}
+
+		if ((left_child_color == -1 || left_child_color == 0) && (right_child_color == -1 || right_child_color == 0))
+		{
+	    	if (left_child_color == 0 && right_child_color == 0)
+	    	{
+				tree_check(left_child(ptr), black);
+				tree_check(right_child(ptr), black);
+	    	}
+	    	else if (left_child_color == 0 && right_child_color == -1)
+	    	{
+				tree_check(left_child(ptr), black);
+	    	}
+	    	else if (left_child_color == -1 && right_child_color == 0)
+	    	{
+				tree_check(right_child(ptr), black);
+	    	}
+	    	else
+	    	{
+				if (black_num != black)
+				{
+				printf("\n==================================================\n");
+		    		printf("VIOLATED!!! (BLACK NODE NUMBER TO LEAFS ARE DIFFERENT) - tree_root : %p\n", tree_root);
+		    		inorder_traverse(tree_root);
+				printf("==================================================\n");
+		    		return;
+				}
+				else
+				{
+		    		return;
+				}
+	    	}
+		}
+		else
+		{
+		printf("\n==================================================\n");
+	    	printf("VIOLATED!!! (RED NODE HAS CHILD WHICH IS NOT BLACK)- tree_root : %p\n", tree_root);
+	    	inorder_traverse(tree_root);
+		printf("==================================================\n");
+	    	return;
+		}
     }
     return;
 }
@@ -1757,9 +1766,13 @@ void mm_free(void* ptr)
 	*(int*)(ptr + current_size - 8) = current_size + 0;
 	insert(ptr, tree_root);
     }
-    tree_checker();
+    //tree_checker();
     black_num = 0;
+	//printf("mm_free END\n");
     //inorder_traverse(tree_root);
+	//printf("\ntree_checker ==============================\n");
+	//tree_checker();
+	//printf("tree_checker ==============================\n\n");
     //printf("mm_free END\n");
     //list_print(lst_start);
     ptr = ptr + 8;
@@ -1794,7 +1807,7 @@ void mm_exit(void)
       mm_free((void*)((char*)lst_tracker + 8));
     }
   }
-  inorder_traverse(tree_root);
+  //inorder_traverse(tree_root);
   lst_start_free = NULL;
   lst_end_free = NULL;
   lst_tracker_free = NULL;

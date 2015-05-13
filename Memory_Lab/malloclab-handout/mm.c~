@@ -80,6 +80,21 @@ void free_list_print (void* lst)
 		}
 	}
 }
+void list_print (void* lst)
+{
+    if (lst == NULL)
+    {
+	return;
+    }
+    else
+    {
+	while (lst < lst_end)
+	{
+	    printf("Address : %p, size : %d, Allocated? %d\n", lst, (*(int*)lst & -8), (*(int*)lst & 1));
+	    lst = lst + (*(int*)lst & -8);
+	}
+    }
+}
 // Red Black Tree Implementation : HEADER(4)-LEFT_CHILD(4)-PARENT(4)-...-FOOTER(4)-RIGHT_CHILD(4) : Minimum size : 24
 int get_size(void* ptr);
 void inorder_traverse(void* ptr);
@@ -192,14 +207,14 @@ void* tree_root = NULL;
 void insert_bst(void* ptr, void* tree);
 void insert(void* ptr, void* tree)
 {
-    printf("Insert - tree root : %p, ptr : %p, size : %d\n", tree_root, ptr, get_size(ptr));
+    //printf("Insert - tree root : %p, ptr : %p, size : %d\n", tree_root, ptr, get_size(ptr));
 	insert_bst(ptr, tree);
-	printf("After BST Insert : \n");
-	inorder_traverse(tree_root);
+	//printf("After BST Insert : \n");
+	//inorder_traverse(tree_root);
     //printf("insert - Inorder traverse done!\n");
     insert_case1(ptr);
-	printf("After Insert : \n");
-	inorder_traverse(tree_root);
+	//printf("After Insert : \n");
+	//inorder_traverse(tree_root);
 }
 void insert_bst(void* ptr, void* tree)
 {
@@ -214,7 +229,7 @@ void insert_bst(void* ptr, void* tree)
 			*(int*)(ptr + 4) = 0;
 			*(int*)(ptr + 8) = 0;
 			*(int*)(ptr + (*(int*)ptr & -8) - 4) = 0;
-			printf("insert_bst - tree NULL -> tree : %p\n", tree);
+			//printf("insert_bst - tree NULL -> tree : %p\n", tree);
 		}
 		else // Case 2 : Tree exists.
 		{
@@ -254,7 +269,7 @@ void insert_bst(void* ptr, void* tree)
 
 void insert_case1 (void* ptr)
 {
-	printf("insert_case1\n");
+	//printf("insert_case1\n");
 	if ((parent(ptr)) == NULL)
 	{
 		color_black(ptr);
@@ -266,7 +281,7 @@ void insert_case1 (void* ptr)
 }
 void insert_case2 (void* ptr)
 {
-	printf("insert_case2\n");
+	//printf("insert_case2\n");
 	if (get_color(parent(ptr)) == 0)
 	{
 		return;
@@ -278,7 +293,7 @@ void insert_case2 (void* ptr)
 }
 void insert_case3 (void* ptr)
 {
-	printf("insert_case3\n");
+	//printf("insert_case3\n");
 	if (uncle(ptr) != NULL)
 	{
 		if (get_color(uncle(ptr)) == 1)
@@ -303,7 +318,7 @@ void* parent_temp_rr;
 void* new_root_temp;
 void left_rotation(void* ptr)
 {
-	printf("left_rotation - start\n");
+	//printf("left_rotation - start\n");
 	parent_temp_lr = parent(ptr);
 	new_root_temp = right_child(ptr);
 	if (parent_temp_lr == NULL)
@@ -333,11 +348,11 @@ void left_rotation(void* ptr)
 	*(int*)(ptr + 8) = (int)new_root_temp;
 	*(int*)(new_root_temp + 4) = (int)ptr;
 	*(int*)(new_root_temp + 8) = (int)parent_temp_lr;
-	printf("left_rotation - done\n");
+	//printf("left_rotation - done\n");
 }
 void right_rotation(void* ptr)
 {
-	printf("right_rotation - start\n");
+	//printf("right_rotation - start\n");
 	parent_temp_rr = parent(ptr);
 	new_root_temp = left_child(ptr);
 	if (parent_temp_rr == NULL)
@@ -367,7 +382,7 @@ void right_rotation(void* ptr)
 	*(int*)(ptr + 8) = (int)new_root_temp;
 	*(int*)(new_root_temp + (get_size(new_root_temp)) - 4) = (int)ptr;
 	*(int*)(new_root_temp + 8) = (int)parent_temp_rr;
-	printf("right_rotation - done\n");
+	//printf("right_rotation - done\n");
 	/**(int*)(parent_temp_rr + 4) = (int)(right_child(ptr));
 	if (right_child(ptr) != NULL)
 	{
@@ -376,7 +391,7 @@ void right_rotation(void* ptr)
 	*(int*)(ptr + (get_size(ptr)) - 4) = (int)parent_temp_rr;
 	*(int*)(ptr + 8) = *(int*)(parent_temp_rr + 8);
 	*(int*)(parent_temp_rr + 8) = (int)ptr;
-	printf("right_rotation - done\n");*/
+	//printf("right_rotation - done\n");*/
 }
 void* saved_p_ic4;
 void* saved_left_ic4;
@@ -384,7 +399,7 @@ void* saved_right_ic4;
 void* gp_temp_ic4;
 void insert_case4 (void* ptr)
 {
-	printf("insert_case4 - ptr : %p\n", ptr);
+	//printf("insert_case4 - ptr : %p\n", ptr);
 	if ((ptr == (right_child(parent(ptr)))) && ((parent(ptr)) == (left_child(grandparent(ptr)))))
 	{
 		/*gp_temp_ic4 = grandparent(ptr);
@@ -413,7 +428,7 @@ void insert_case4 (void* ptr)
 }
 void insert_case5 (void* ptr)
 {
-	printf("insert_case5 - ptr : %p, parent(ptr) : %p, grandparent(ptr) : %p\n", ptr, parent(ptr), grandparent(ptr));
+	//printf("insert_case5 - ptr : %p, parent(ptr) : %p, grandparent(ptr) : %p\n", ptr, parent(ptr), grandparent(ptr));
 	color_black(parent(ptr));
 	color_red(grandparent(ptr));
 	if (ptr == (left_child(parent(ptr))))
@@ -461,23 +476,101 @@ void* replace_node_ptr2_parent_temp;
 void* copy_node_ptr1_parent_temp;
 void* copy_node_ptr1_left_child_temp;
 void* copy_node_ptr1_right_child_temp;
+void* copy_node_ptr2_parent_temp;
+void* copy_node_ptr2_left_child_temp;
+void* copy_node_ptr2_right_child_temp;
 void copy_node(void* ptr1, void* ptr2) // Just exchange the two nodes.
 {
+	//printf("Before copy_node : ptr1 - %p, ptr2 - %p\n", ptr1, ptr2);
 	if (ptr1 == NULL || ptr2 == NULL)
 	{
 		return;
 	}
 	else
 	{
+		if (ptr1 == tree_root)
+		{
+			tree_root = ptr2;
+		}
+		else if (ptr2 == tree_root)
+		{
+			tree_root = ptr1;
+		}
 		copy_node_ptr1_parent_temp = parent(ptr1);
 		copy_node_ptr1_left_child_temp = left_child(ptr1);
 		copy_node_ptr1_right_child_temp = right_child(ptr1);
-		*(int*)(ptr1 + 4) = (int)(left_child(ptr2));
-		*(int*)(ptr1 + 8) = (int)(parent(ptr2));
-		*(int*)(ptr1 + (get_size(ptr1)) - 4) = (int)(right_child(ptr2));
+		copy_node_ptr2_parent_temp = parent(ptr2);
+		copy_node_ptr2_left_child_temp = left_child(ptr2);
+		copy_node_ptr2_right_child_temp = right_child(ptr2);
+		// Exception 1 - ptr1's right child is ptr2.
+		if (ptr2 == (right_child(ptr1)))
+		{
+			copy_node_ptr1_right_child_temp = ptr1;
+			copy_node_ptr2_parent_temp = ptr2;
+		}
+		// Exception 2 - ptr1's left child is ptr2.
+		if (ptr2 == (left_child(ptr1)))
+		{
+			copy_node_ptr1_left_child_temp = ptr1;
+			copy_node_ptr2_parent_temp = ptr2;
+		}
+		// Exception 3 - ptr2's right child is ptr1.
+		if (ptr1 == (right_child(ptr2)))
+		{
+			copy_node_ptr2_right_child_temp = ptr2;
+			copy_node_ptr1_parent_temp = ptr1;
+		}
+		// Exception 4 - ptr2's left child is ptr1.
+		if (ptr1 == (left_child(ptr2)))
+		{
+			copy_node_ptr2_left_child_temp = ptr2;
+			copy_node_ptr1_parent_temp = ptr1;
+		}
+		// Ordinary case.
+		//if ((ptr2 != (right_child(ptr1))) && (ptr2 != (left_child(ptr1))) && (ptr1 != (right_child(ptr2))) && (ptr1 != (left_child(ptr2))))
+		//{
+			if (ptr1 == (left_child(copy_node_ptr1_parent_temp)))
+			{
+				*(int*)(copy_node_ptr1_parent_temp + 4) = (int)ptr2;
+			}
+			else if (ptr1 == (right_child(copy_node_ptr1_parent_temp)))
+			{
+				*(int*)(copy_node_ptr1_parent_temp + (get_size(copy_node_ptr1_parent_temp)) - 4) = (int)ptr2;
+			}
+			if (ptr2 == (left_child(copy_node_ptr2_parent_temp)))
+			{
+				*(int*)(copy_node_ptr2_parent_temp + 4) = (int)ptr1;
+			}
+			else if (ptr2 == (right_child(copy_node_ptr2_parent_temp)))
+			{
+				*(int*)(copy_node_ptr2_parent_temp + (get_size(copy_node_ptr2_parent_temp)) - 4) = (int)ptr1;
+			}
+		//}
+		if (copy_node_ptr1_left_child_temp != NULL)
+		{
+			*(int*)(copy_node_ptr1_left_child_temp + 8) = (int)ptr2;
+		}
+		if (copy_node_ptr1_right_child_temp != NULL)
+		{
+			*(int*)(copy_node_ptr1_right_child_temp + 8) = (int)ptr2;
+		}
+		if (copy_node_ptr2_left_child_temp != NULL)
+		{
+			*(int*)(copy_node_ptr2_left_child_temp + 8) = (int)ptr1;
+		}
+		if (copy_node_ptr2_right_child_temp != NULL)
+		{
+			*(int*)(copy_node_ptr2_right_child_temp + 8) = (int)ptr1;
+		}
+
+		*(int*)(ptr1 + 4) = (int)copy_node_ptr2_left_child_temp;
+		*(int*)(ptr1 + 8) = (int)copy_node_ptr2_parent_temp;
+		*(int*)(ptr1 + (get_size(ptr1)) - 4) = (int)copy_node_ptr2_right_child_temp;
 		*(int*)(ptr2 + 4) = (int)(copy_node_ptr1_left_child_temp);
 		*(int*)(ptr2 + 8) = (int)(copy_node_ptr1_parent_temp);
 		*(int*)(ptr2 + (get_size(ptr2)) - 4) = (int)(copy_node_ptr1_right_child_temp);
+
+		//printf("after copy_node : ptr1 : %p, ptr1 parent : %p, ptr1 left_child : %p, ptr1 right_child : %p, ptr2 : %p, ptr2 parent : %p, ptr2 left_child : %p, ptr2 right_child : %p\n", ptr1, parent(ptr1), left_child(ptr1), right_child(ptr1), ptr2, parent(ptr2), left_child(ptr2), right_child(ptr2));
 	}
 }
 
@@ -505,20 +598,20 @@ void replace_node(void* ptr1, void* ptr2) // ptr2 goes into ptr1's place and ptr
 			replace_node_ptr2_child_temp = right_child(ptr2);
 			succ = 1;
 		}
-		printf("replace_node - Debug1\n");
+		//printf("replace_node - Debug1\n");
 		*(int*)(ptr1 + 4) = 0;
 		*(int*)(ptr1 + 8) = 0;
 		*(int*)(ptr1 + (get_size(ptr1)) - 4) = 0;
 		*(int*)(ptr2 + 4) = (int)(replace_node_ptr1_left_child_temp);
 		*(int*)(ptr2 + 8) = (int)(replace_node_ptr1_parent_temp);
 		*(int*)(ptr2 + (get_size(ptr2)) - 4) = (int)(replace_node_ptr1_right_child_temp);
-		printf("replace_node - Debug2\n");
+		//printf("replace_node - Debug2\n");
 		if (replace_node_ptr2_parent_temp == ptr1) // Successor or predecessor's parent is ptr1. 
 		{
-			printf("replace_node - Successor or predecessor's parent is ptr1\n");
+			//printf("replace_node - Successor or predecessor's parent is ptr1\n");
 			if (pred)
 			{
-				printf("replace_node - parent is ptr1 - pred\n");
+				//printf("replace_node - parent is ptr1 - pred\n");
 				*(int*)(ptr2 + 4) = (int)(replace_node_ptr2_child_temp);
 				if (replace_node_ptr2_child_temp != NULL)
 				{
@@ -527,7 +620,7 @@ void replace_node(void* ptr1, void* ptr2) // ptr2 goes into ptr1's place and ptr
 			}
 			else if (succ)
 			{
-				printf("replace_node - parent is ptr1 - succ\n");
+				//printf("replace_node - parent is ptr1 - succ\n");
 				*(int*)(ptr2 + (get_size(ptr2)) - 4) = (int)(replace_node_ptr2_child_temp);
 				if (replace_node_ptr2_child_temp != NULL)
 				{
@@ -537,10 +630,10 @@ void replace_node(void* ptr1, void* ptr2) // ptr2 goes into ptr1's place and ptr
 		}
 		else // Successor or predecossor's parent is not ptr1. Ordinary case.
 		{
-			printf("replace_node - Successor or predecessor's parent is not ptr1.\n");
+			//printf("replace_node - Successor or predecessor's parent is not ptr1.\n");
 			if (pred)
 			{
-				printf("replace_node - parent is not ptr1 - pred\n");
+				//printf("replace_node - parent is not ptr1 - pred\n");
 				*(int*)(replace_node_ptr2_parent_temp + (get_size(replace_node_ptr2_parent_temp)) - 4) = (int)(replace_node_ptr2_child_temp);
 				if (replace_node_ptr2_child_temp != NULL)
 				{
@@ -549,7 +642,7 @@ void replace_node(void* ptr1, void* ptr2) // ptr2 goes into ptr1's place and ptr
 			}
 			else if (succ)
 			{
-				printf("replace_node - parent is not ptr1 - succ\n");
+				//printf("replace_node - parent is not ptr1 - succ\n");
 				*(int*)(replace_node_ptr2_parent_temp + 4) = (int)(replace_node_ptr2_child_temp);
 				if (replace_node_ptr2_child_temp != NULL)
 				{
@@ -572,28 +665,28 @@ void delete_one_child(void* ptr)
 	else
 	{
 		/*
-		printf("delete_one_child - ptr : %p, parent : %p\n", ptr, (parent(ptr)));
+		//printf("delete_one_child - ptr : %p, parent : %p\n", ptr, (parent(ptr)));
 		if ((left_child(ptr) == NULL) && (right_child(ptr) != NULL)) // Right child exists.
 		{
-			printf("delete_one_child - right_child exists!\n");
+			//printf("delete_one_child - right_child exists!\n");
 			delete_one_child_temp = right_child(ptr);
 		}
 		else if ((left_child(ptr) != NULL) && (right_child(ptr) == NULL)) // Left child exists.
 		{
-			printf("delete_one_child - left_child exists!\n");
+			//printf("delete_one_child - left_child exists!\n");
 			delete_one_child_temp = left_child(ptr);
 		}
 		else // No child exists.
 		{
-			printf("delete_one_child - no child exists!\n");
+			//printf("delete_one_child - no child exists!\n");
 			if (parent(ptr) == NULL) // ptr is root node.
 			{
-				printf("delete_one_child - ptr is root!\n");
+				//printf("delete_one_child - ptr is root!\n");
 				tree_root = NULL;
 			}
 			else // ptr is not root.
 			{
-				printf("delete_one_child - ptr is not root!\n");
+				//printf("delete_one_child - ptr is not root!\n");
 				delete_one_child_parent_temp = parent(ptr);
 				if (left_child(delete_one_child_parent_temp) == ptr) // ptr is left child of parent.
 				{
@@ -608,7 +701,7 @@ void delete_one_child(void* ptr)
 			return;
 		}
 		replace_node(ptr, delete_one_child_temp); // Change the node ptr and the existing child.
-		printf("delete_one_child - nodes are replaced!\n");
+		//printf("delete_one_child - nodes are replaced!\n");
 		if (get_color(ptr) == 0)
 		{
 			if (get_color(delete_one_child_temp) == 1)
@@ -641,7 +734,7 @@ void delete_one_child(void* ptr)
 		{
 			color_child = 0;
 		}
-		
+		//printf("delete_one_child - easy cases - ptr : %p, get_color(ptr) : %d, color_child : %d\n", ptr, get_color(ptr), color_child);	
 		if (get_color(ptr) == 1)
 		{
 			delete_one_child_parent_temp = parent(ptr);
@@ -649,43 +742,88 @@ void delete_one_child(void* ptr)
 			{
 				*(int*)(delete_one_child_parent_temp + 4) = 0;
 			}
-			else
+			else if (ptr == right_child(delete_one_child_parent_temp))
 			{
 				*(int*)(delete_one_child_parent_temp + (get_size(delete_one_child_parent_temp)) - 4) = 0;
 			}
+
+			if (ptr == tree_root)
+			{
+				tree_root = NULL;
+			}
+			//copy_node(ptr, delete_one_child_temp);
 			*(int*)(ptr + 4) = 0;
 			*(int*)(ptr + 8) = 0;
 			*(int*)(ptr + (get_size(ptr)) - 4) = 0;
 		}
 		else if ((get_color(ptr) == 0) && (color_child == 1))
 		{
-			color_black(delete_one_child_parent_temp);
-		}
-		else
-		{
-		delete_case1(ptr);
-		printf("After delete_case1~6 : (tree_root : %p)\n", tree_root);
-		inorder_traverse(tree_root);
-		delete_one_child_parent_temp = parent(ptr);
-		if (delete_one_child_parent_temp == NULL)
-		{
-			tree_root = NULL;
-		}
-		else
-		{
-			printf("delete_one_child - delete_one_child_parent_temp : %p, ptr : %p\n", delete_one_child_parent_temp, ptr);
+			color_black(delete_one_child_temp);
+			delete_one_child_parent_temp = parent(ptr);
+			/*if (ptr == tree_root)
+			{
+				tree_root = delete_one_child_temp;
+			}
+
 			if (ptr == left_child(delete_one_child_parent_temp))
 			{
-				*(int*)(delete_one_child_parent_temp + 4) = 0;
+				copy_node(ptr, delete_one_child_temp);
+				*(int*)(delete_one_child_parent_temp + 4) = (int)delete_one_child_temp;
+			}
+			else if (ptr == right_child(delete_one_child_parent_temp))
+			{
+				copy_node(ptr, delete_one_child_temp);
+				*(int*)(delete_one_child_parent_temp + (get_size(delete_one_child_parent_temp)) - 4) = (int)delete_one_child_temp;
 			}
 			else
 			{
-				*(int*)(delete_one_child_parent_temp + (get_size(delete_one_child_parent_temp)) - 4) = 0;
+				copy_node(ptr, delete_one_child_temp);
+			}*/
+			//printf("delete_one_child - before copy_node (tree_root : %p)\n", tree_root);
+			copy_node(ptr, delete_one_child_temp);
+			//printf("delete_one_child - test traverse (tree_root : %p)\n", tree_root);
+			//inorder_traverse(tree_root);
+			if (ptr == right_child(delete_one_child_temp))
+			{
+				*(int*)(delete_one_child_temp + (get_size(delete_one_child_temp)) - 4) = 0;
 			}
+			else
+			{
+				*(int*)(delete_one_child_temp + 4) = 0;
+			}
+			*(int*)(ptr + 4) = 0;
+			*(int*)(ptr + 8) = 0;
+			*(int*)(ptr + (get_size(ptr)) - 4) = 0;
+			
 		}
-		*(int*)(ptr + 4) = 0;
-		*(int*)(ptr + 8) = 0;
-		*(int*)(ptr + (get_size(ptr)) - 4) = 0;
+		else
+		{
+			//printf("Before delete_case1~6 : (tree_root : %p)\n", tree_root);
+			//inorder_traverse(tree_root);
+			delete_case1(ptr);
+			//printf("After delete_case1~6 : (tree_root : %p)\n", tree_root);
+			//inorder_traverse(tree_root);
+			delete_one_child_parent_temp = parent(ptr);
+			if (delete_one_child_parent_temp == NULL)
+			{
+				tree_root = NULL;
+			}
+			else
+			{
+				//printf("delete_one_child - delete_one_child_parent_temp : %p, ptr : %p\n", delete_one_child_parent_temp, ptr);
+				if (ptr == left_child(delete_one_child_parent_temp))
+				{
+					*(int*)(delete_one_child_parent_temp + 4) = 0;
+				}
+				else
+				{
+					*(int*)(delete_one_child_parent_temp + (get_size(delete_one_child_parent_temp)) - 4) = 0;
+				}
+			}
+			*(int*)(ptr + 4) = 0;
+			*(int*)(ptr + 8) = 0;
+			*(int*)(ptr + (get_size(ptr)) - 4) = 0;
+		}
 	}
 }
 void* find_inorder_pred_res;
@@ -748,62 +886,98 @@ void delete(void* ptr)
 	{
 		if ((parent(ptr) == NULL) && (left_child(ptr) == NULL) && (right_child(ptr) == NULL)) // Case 1 : ptr is root and only node.
 		{
-			printf("delete - Case 1 - ptr : %p, size : %d\n", ptr, get_size(ptr));
+			//printf("delete - Case 1 - ptr : %p, size : %d\n", ptr, get_size(ptr));
 			tree_root = NULL;
 			//return;
 		}
 		else if ((parent(ptr) == NULL) && (left_child(ptr) == NULL) && (right_child(ptr) != NULL)) // Case 2 : ptr is root and left child is NULL.
 		{
-			printf("delete - Case 2 - ptr : %p, size : %d\n", ptr, get_size(ptr));
+			//printf("delete - Case 2 - ptr : %p, size : %d\n", ptr, get_size(ptr));
 			//tree_root = right_child(ptr);
 			delete_one_child(ptr);
 			//return;
 		}
 		else if ((parent(ptr) == NULL) && (right_child(ptr) == NULL) && (left_child(ptr) != NULL)) // Case 3 : ptr is root and right child is NULL.
 		{
-			printf("delete - Case 3 - ptr : %p, size : %d\n", ptr, get_size(ptr));
+			//printf("delete - Case 3 - ptr : %p, size : %d\n", ptr, get_size(ptr));
 			//tree_root = left_child(ptr);
 			delete_one_child(ptr);
 			//return;
 		}
 		else if ((parent(ptr) == NULL) && (right_child(ptr) != NULL) && (left_child(ptr) != NULL)) // Case 4 : ptr is root and left, right are not NULL.
 		{
-			printf("delete - Case 4 - ptr : %p, size : %d\n", ptr, get_size(ptr));
+			//printf("delete - Case 4 - ptr : %p, size : %d\n", ptr, get_size(ptr));
 			delete_inorder_pred_temp = find_inorder_pred(ptr);
+			int color_ptr = get_color(ptr);
+			int color_delete_inorder_pred_temp = get_color(delete_inorder_pred_temp);
 			copy_node(ptr, delete_inorder_pred_temp);
+		    	if (color_ptr == 0)
+			{
+			    color_black(delete_inorder_pred_temp);
+			}
+			else
+			{
+			    color_red(delete_inorder_pred_temp);
+			}
+			if (color_delete_inorder_pred_temp == 0)
+			{
+			    color_black(ptr);
+			}
+			else
+			{
+			    color_red(ptr);
+			}
 			tree_root = delete_inorder_pred_temp;
 			delete_one_child(ptr);
 			//return;
 		}
 		else if ((right_child(ptr) == NULL) && (left_child(ptr) == NULL)) // Case 5 : ptr is not root and has no child.
 		{
-			printf("delete - Case 5 - ptr : %p, size : %d\n", ptr, get_size(ptr));
+			//printf("delete - Case 5 - ptr : %p, size : %d\n", ptr, get_size(ptr));
 			delete_one_child(ptr);
 			//return;
 		}
 		else if ((right_child(ptr) != NULL) && (left_child(ptr) == NULL)) // Case 6 : ptr is not root and has right child.
 		{
-			printf("delete - Case 6 - ptr : %p, size : %d\n", ptr, get_size(ptr));
+			//printf("delete - Case 6 - ptr : %p, size : %d\n", ptr, get_size(ptr));
 			delete_one_child(ptr);
 			//return;
 		}
 		else if ((right_child(ptr) == NULL) && (left_child(ptr) != NULL)) // Case 7 : ptr is not root and has left child.
 		{
-			printf("delete - Case 7 - ptr : %p, size : %d\n", ptr, get_size(ptr));
+			//printf("delete - Case 7 - ptr : %p, size : %d\n", ptr, get_size(ptr));
 			delete_one_child(ptr);
 			//return;
 		}
 		else // Case 8 : ptr is not root and has both child.
 		{
-			printf("delete - Case 8 - ptr : %p, size : %d\n", ptr, get_size(ptr));
+			//printf("delete - Case 8 - ptr : %p, size : %d\n", ptr, get_size(ptr));
 			delete_inorder_pred_temp = find_inorder_pred(ptr);
+			int color_ptr = get_color(ptr);
+			int color_delete_inorder_pred_temp = get_color(delete_inorder_pred_temp);
 			copy_node(ptr, delete_inorder_pred_temp);
+			if (color_ptr == 0)
+			{
+			    color_black(delete_inorder_pred_temp);
+			}
+			else
+			{
+			    color_red(delete_inorder_pred_temp);
+			}
+			if (color_delete_inorder_pred_temp == 0)
+			{
+			    color_black(ptr);
+			}
+			else
+			{
+			    color_red(ptr);
+			}
 			delete_one_child(ptr);
 			//return;
 		}
 	}
-	printf("After Delete : \n");
-	inorder_traverse(tree_root);
+	//printf("After Delete : \n");
+	//inorder_traverse(tree_root);
 }
 
 void delete_case1(void* ptr) // If ptr is root, done.
@@ -826,7 +1000,7 @@ void delete_case2(void* ptr)
 	{
 		color_sibling = get_color(delete_case2_sibling);
 	}
-	printf("delete_case2 - ptr : %p, sibling : %p, color_sibling : %d\n", ptr, delete_case2_sibling, color_sibling);
+	//printf("delete_case2 - ptr : %p, sibling : %p, color_sibling : %d\n", ptr, delete_case2_sibling, color_sibling);
 	if (color_sibling == 1)
 	{
 		color_red(parent(ptr));
@@ -855,7 +1029,7 @@ void delete_case3(void* ptr)
 	{
 		color_sibling = get_color(delete_case3_sibling);
 	}
-	printf("delete_case3 - ptr : %p, delete_case3_sibling : %p, color_sibling : %d\n", ptr, delete_case3_sibling, color_sibling);
+	//printf("delete_case3 - ptr : %p, delete_case3_sibling : %p, color_sibling : %d\n", ptr, delete_case3_sibling, color_sibling);
 	if ((get_color(parent(ptr)) == 0) && (color_sibling == 0)) // First two conditions.
 	{
 		if (delete_case3_sibling == NULL) // Color of sibling is black, but it is NULL leaf of parent.
@@ -888,6 +1062,10 @@ void delete_case3(void* ptr)
 			delete_case4(ptr);
 		}
 	}
+	else
+	{
+		delete_case4(ptr);
+	}
 }
 void* delete_case4_sibling;
 void delete_case4(void* ptr)
@@ -902,42 +1080,42 @@ void delete_case4(void* ptr)
 	{
 		color_sibling = get_color(delete_case4_sibling);
 	}
-	printf("delete_case4 - ptr : %p, delete_case4_sibling : %p, color_sibling : %d\n", ptr, delete_case4_sibling, color_sibling);
+	//printf("delete_case4 - ptr : %p, delete_case4_sibling : %p, color_sibling : %d\n", ptr, delete_case4_sibling, color_sibling);
 	if ((get_color(parent(ptr)) == 1) & (color_sibling == 0))
 	{
 		if (delete_case4_sibling == NULL)
 		{
-			printf("delete_case4 - IF 1\n");
+			//printf("delete_case4 - IF 1\n");
 			delete_case5(ptr);
 			return;
 		}
 		if ((left_child(delete_case4_sibling) == NULL) && (right_child(delete_case4_sibling) == NULL))
 		{
-			printf("delete_case4 - IF 2\n");
+			//printf("delete_case4 - IF 2\n");
 			color_red(delete_case4_sibling);
 			color_black(parent(ptr));
 		}
 		else if ((left_child(delete_case4_sibling) == NULL) && (get_color(right_child(delete_case4_sibling)) == 0))
 		{
-			printf("delete_case4 - IF 3\n");
+			//printf("delete_case4 - IF 3\n");
 			color_red(delete_case4_sibling);
 			color_black(parent(ptr));
 		}
 		else if ((get_color(left_child(delete_case4_sibling)) == 0) && (right_child(delete_case4_sibling) == NULL))
 		{
-			printf("delete_case4 - IF 4\n");
+			//printf("delete_case4 - IF 4\n");
 			color_red(delete_case4_sibling);
 			color_black(parent(ptr));
 		}
 		else if ((get_color(left_child(delete_case4_sibling)) == 0) && (get_color(right_child(delete_case4_sibling)) == 0))
 		{
-			printf("delete_case4 - IF 5\n");
+			//printf("delete_case4 - IF 5\n");
 			color_red(delete_case4_sibling);
 			color_black(parent(ptr));
 		}
 		else
 		{
-			printf("delete_case4 - ELSE\n");
+			//printf("delete_case4 - ELSE\n");
 			delete_case5(ptr);
 		}
 	}
@@ -982,7 +1160,7 @@ void delete_case5(void* ptr)
 			color_sibling_right = get_color(right_child(delete_case5_sibling));
 		}
 	}
-	printf("delete_case5 - ptr : %p, delete_case5_sibling : %p, color_sibling : %d, color_sibling_left : %d, color_sibling_right : %d\n", ptr, delete_case5_sibling, color_sibling, color_sibling_left, color_sibling_right);
+	//printf("delete_case5 - ptr : %p, delete_case5_sibling : %p, color_sibling : %d, color_sibling_left : %d, color_sibling_right : %d\n", ptr, delete_case5_sibling, color_sibling, color_sibling_left, color_sibling_right);
 	if (color_sibling == 0)
 	{
 		if ((ptr == (left_child(parent(ptr)))) && (color_sibling_right == 0) && (color_sibling_left == 1))
@@ -1006,7 +1184,7 @@ void delete_case6(void* ptr)
 	// Need to verify that sibling always exists and its left or right child(accordance with appropriate case) exists.
 	delete_case6_sibling = sibling(ptr);
 	int ptr_parent_color = get_color(parent(ptr));
-	printf("delete_case6 - ptr : %p, delete_case6_sibling : %p, ptr_parent_color : %d\n", ptr, delete_case6_sibling, ptr_parent_color);
+	//printf("delete_case6 - ptr : %p, delete_case6_sibling : %p, ptr_parent_color : %d\n", ptr, delete_case6_sibling, ptr_parent_color);
 	if (ptr_parent_color == 0)
 	{
 		color_black(delete_case6_sibling);
@@ -1015,7 +1193,7 @@ void delete_case6(void* ptr)
 	{
 		color_red(delete_case6_sibling);
 	}
-	
+	color_black(parent(ptr));	
 	if (ptr == (left_child(parent(ptr))))
 	{
 		color_black(right_child(delete_case6_sibling));
@@ -1027,7 +1205,8 @@ void delete_case6(void* ptr)
 		right_rotation(parent(ptr));
 	}
 }
-				
+void* return_block;		
+void* tree_root_temp;
 void* find_block(int size, void* tree) // Find the best block(block size is same or greater than given size, and it should be same of smaller than size+24. If no smaller block than size is size+24, return smallest size block and split it in mm_malloc.
 {
     if (tree == NULL) // Tree does not exist.
@@ -1036,29 +1215,52 @@ void* find_block(int size, void* tree) // Find the best block(block size is same
     }
     else // Tree exists.
     {
-	int node_size = get_size(tree);
-	if ((node_size < size) && ((right_child(tree)) != NULL)) // size of node is smaller than size. must find larger block.
+	return_block = NULL;
+	tree_root_temp = tree;
+	while(tree != NULL)
 	{
-	    return find_block(size, (right_child(tree)));
+	    int node_size = get_size(tree);
+	    if ((node_size < size) && ((right_child(tree)) != NULL)) // size of node is smaller than size. must find larger block.
+	    {
+		//return find_block(size, (right_child(tree)));
+		tree = right_child(tree);
+	    }
+	    else if ((node_size < size) && (right_child(tree) == NULL)) // size of node is smaller than size, but there is no larger block, return.
+	    {
+		//return return_block;
+		//return_block = return_block;
+		//tree = right_child(tree);
+		break;
+	    }
+	    else if ((node_size > size + 24) && (left_child(tree) != NULL)) // size of node is larger than size+24. must find smaller block.
+	    {
+		return_block = tree;
+		//return find_block(size, (left_child(tree)));
+		tree = left_child(tree);
+	    }
+	    else if ((node_size > size + 24) && (left_child(tree) == NULL)) // size of node is larger than size+24, but there is no smaller block, return and split.
+	    {
+		return_block = tree;
+		//delete(return_block);
+		//return return_block;
+		//tree = left_child(tree);
+		break;
+	    }
+	    else //((node_size >= size) && (node_size <= size + 24)) - Best block is found. allocate without splitting.
+	    {
+		return_block = tree;
+		//delete(return_block);
+		//return return_block;
+		break;
+	    }
 	}
-	else if ((node_size < size) && (right_child(tree) == NULL)) // size of node is smaller than size, but there is no larger block, return NULL.
+	//printf("find_block : tree - %p, tree_root_temp - %p, return_block - %p\n", tree, tree_root_temp, return_block);
+	tree = tree_root_temp;
+	if (return_block != NULL)
 	{
-	    return NULL;
+	    delete(return_block);
 	}
-	else if ((node_size > size + 24) && (left_child(tree) != NULL)) // size of node is larger than size+24. must find smaller block.
-	{
-	    return find_block(size, (left_child(tree)));
-	}
-	else if ((node_size > size + 24) && (left_child(tree) == NULL)) // size of node is larger than size+24, but there is no smaller block, return and split.
-	{
-	    delete(tree);
-	    return tree;
-	}
-	else //((node_size >= size) && (node_size <= size + 24)) - Best block is found. allocate without splitting.
-	{
-	    delete(tree);
-	    return tree;
-	}
+	return return_block;
     }
 }
 void* found_node;
@@ -1091,8 +1293,164 @@ void inorder_traverse(void* tree)
 	}
     }
 }
+static int black_num = 0;
+void* tree_check_temp;
+void* tree_check_root_temp;
+void tree_check(void* ptr, int black);
+void tree_checker()
+{
+    tree_check_root_temp = tree_root;
+    tree_check_temp = tree_root;
+    while (tree_check_temp != NULL)
+    {
+		if (get_color(tree_check_temp) == 0)
+		{
+	    	black_num++;
+		}
+		tree_check_temp = left_child(tree_check_temp);
+    }
+    tree_root = tree_check_root_temp;
 
+    tree_check(tree_root, 0);
+    black_num = 0;
+}
+void tree_check(void* ptr, int black)
+{
+    if (tree_root == ptr && get_color(ptr) != 0)
+    {
+		printf("\n==================================================\n");
+		printf("VIOLATED!!! (ROOT IS NOT BLACK) - tree root : %p\n", tree_root);
+		inorder_traverse(tree_root);
+		printf("\n==================================================\n");
+		return;
+    }
+    if (get_color(ptr) == 0)
+    {
+		//black_num++
+		if (left_child(ptr) != NULL && right_child(ptr) != NULL)
+		{
+	    	tree_check((left_child(ptr)), (black + 1));
+	    	tree_check((right_child(ptr)), (black + 1));
+		}
+		else if (left_child(ptr) != NULL && right_child(ptr) == NULL)
+		{
+	    	tree_check((left_child(ptr)), (black + 1));
+		}
+		else if (left_child(ptr) == NULL && right_child(ptr) != NULL)
+		{
+	    	tree_check((right_child(ptr)), (black + 1));
+		}
+		else
+		{
+	    	if (black_num != black+1)
+	    	{
+				printf("VIOLATED!!! (BLACK NODE NUMBER TO LEAFS ARE DIFFERENT)- tree_root : %p\n", tree_root);
+				inorder_traverse(tree_root);
+				return;
+	    	}
+	    	else
+	    	{
+			return;
+	    	}
+		}
+    }
+    else
+    {
+		int left_child_color = -1;
+		int right_child_color = -1;
+		if (left_child(ptr) != NULL)
+		{
+	    	left_child_color = get_color((left_child(ptr)));
+		}
+		if (right_child(ptr) != NULL)
+		{
+	    	right_child_color = get_color((right_child(ptr)));
+		}
 
+		if ((left_child_color == -1 || left_child_color == 0) && (right_child_color == -1 || right_child_color == 0))
+		{
+	    	if (left_child_color == 0 && right_child_color == 0)
+	    	{
+				tree_check(left_child(ptr), black);
+				tree_check(right_child(ptr), black);
+	    	}
+	    	else if (left_child_color == 0 && right_child_color == -1)
+	    	{
+				tree_check(left_child(ptr), black);
+	    	}
+	    	else if (left_child_color == -1 && right_child_color == 0)
+	    	{
+				tree_check(right_child(ptr), black);
+	    	}
+	    	else
+	    	{
+				if (black_num != black)
+				{
+		    		printf("VIOLATED!!! (BLACK NODE NUMBER TO LEAFS ARE DIFFERENT) - tree_root : %p\n", tree_root);
+		    		inorder_traverse(tree_root);
+		    		return;
+				}
+				else
+				{
+		    		return;
+				}
+	    	}
+		}
+		else
+		{
+	    	printf("VIOLATED!!! (RED NODE HAS CHILD WHICH IS NOT BLACK)- tree_root : %p\n", tree_root);
+	    	inorder_traverse(tree_root);
+	    	return;
+		}
+    }
+    return;
+}
+
+static float alpha = 1.0;
+static float heuristic_size = 0.0;
+static float heuristic_weight = 0.7;
+static float new_weight = 0.3;
+static float heuristic_pvalue = 0.05;
+static int alloc_num = 0;
+static int alloc_num_min = 16;
+void* heuristic_alloc_temp;
+void heuristic_allocation (int size)
+{
+    //printf("heuristic_allocation\n");
+    int num = 1;
+    while (num > 0)
+    {
+	heuristic_alloc_temp = mem_sbrk(size);
+	*(int*)heuristic_alloc_temp = size + 0;
+	*(int*)(heuristic_alloc_temp + size - 8) = size + 0;
+	if (lst_start != lst_end)
+	{
+	    int prev_size = (*(int*)(heuristic_alloc_temp - 8)) & -8;
+	    *(int*)(heuristic_alloc_temp - prev_size) = (*(int*)(heuristic_alloc_temp - prev_size)) & -3;
+	    *(int*)(heuristic_alloc_temp - 8) = (*(int*)(heuristic_alloc_temp - 8)) & -3;
+	}
+	insert(heuristic_alloc_temp, tree_root);
+	num = num - 1;
+    }
+    heuristic_alloc_temp = NULL;
+}
+void calculate_heuristic (float size, float heur)
+{
+    alloc_num = alloc_num + 1;
+    float prev_heuristic_size = heuristic_size;
+    heuristic_size = ((heuristic_size * heuristic_weight) + (size * new_weight));
+    alpha = (alpha * heuristic_weight) + ((heuristic_size / prev_heuristic_size) * new_weight);
+    float abs_diff_alpha = 1.0 - alpha;
+    if (abs_diff_alpha < 0.0)
+    {
+	abs_diff_alpha = 0.0 - abs_diff_alpha;
+    }
+    if (abs_diff_alpha < heuristic_pvalue && alloc_num >= alloc_num_min)
+    {
+	heuristic_allocation((int)size);
+	alloc_num = 0;
+    }
+}
 
 
 /* 
@@ -1137,6 +1495,8 @@ int mm_init(range_t **ranges)
   lst_current = NULL;
   remaining_block_temp = NULL;
   tree_root = NULL;
+  heuristic_size = 0.0;
+  alloc_num = 0;
 
   /* Initially, lst points 8 bytes away from start of heap. lst_start and lst_end points to same address as lst. */
   lst_current = mem_sbrk(16);
@@ -1162,8 +1522,10 @@ int mm_init(range_t **ranges)
 void* mm_malloc(size_t size)
 {
   // For debuging.
-  printf("ALLOCATION - %d\n", (allocation_counter++));
+  //printf("ALLOCATION - %d\n", (allocation_counter++));
   //int newsize = ALIGN(size + SIZE_T_SIZE);
+  //printf("mm_malloc START\n");
+  //list_print(lst_start);
   int newsize = ALIGN(size + 2*SIZE_T_SIZE); // 8 for header and footer of memory block in heap.
   //void *p = mem_sbrk(newsize);
   if (lst_start == lst_end) // Allocating case 1 : There is no block allocated.
@@ -1178,6 +1540,8 @@ void* mm_malloc(size_t size)
     (*(int*)(lst_current + (newsize - 8))) = (newsize & -8) + 1;
     lst_end = lst_current + newsize;
     lst_start = lst_current;
+    heuristic_size = newsize - 24;
+    calculate_heuristic((float)newsize, heuristic_size);
     //printf("mm_malloc - new allocation - lst_start : %p, lst_end : %p, allocated : %d\n", lst_start, lst_end, ((*(int*)lst_start) & 1));
   }
   else // Allocating case 2 : Allocated blocks exists. Free or allocated. Find 'free and allocatable size' block. If not exists, allocate new block at the end of list.
@@ -1185,25 +1549,31 @@ void* mm_malloc(size_t size)
     //int allocated = 0;
     //for (lst_tracker_free = lst_start_free; ((lst_tracker_free != NULL) && ((*(int*)(lst_tracker_free + 8)) != 0)); lst_tracker_free = ((void*)(*((int*)lst_tracker_free + 2))))
     //lst_tracker_free = lst_start_free;
-    //printf("Allocating case 2 - lst_start_free : %p, lst_tracker_free : %p, lst_end_free : %p, block size - %d\n", lst_start_free, lst_tracker_free, lst_end_free, newsize);
+    //printf("Allocating case 2 - block size - %d\n", newsize);
     //while((lst_tracker_free != NULL)) //&& ((*(int*)(lst_tracker_free + 8)) != 0))
     found_node = find_block(newsize, tree_root);
+	//printf("Allocating case2 - found_node : %p, found_node size : %d\n", found_node, get_size(found_node));
     if (found_node != NULL)
     {
 	if (get_size(found_node) <= newsize + 24) // Case of best block.
 	{
+		//printf("Allocating case2 - get_size(found_node) <= newsize + 24 - lst_start : %p, found_node : %p\n", lst_start, found_node);
 	    if (found_node != lst_start) // If found_node is not the start of block list, prev block's next block allocation bit of header and footer should be changed.
 	    {
 		int prev_size = *(int*)(found_node - 8) & -8;
+		//printf("Allocating case2 - prev_size : %d\n", prev_size);
 		*(int*)(found_node - prev_size) = (*(int*)(found_node - prev_size)) | 2;
 		*(int*)(found_node - 8) = (*(int*)(found_node - 8)) | 2;
 	    }
+		//printf("Allocating case2 - done with prev block.\n");
 	    *(int*)found_node = (*(int*)found_node | 1);
 	    *(int*)(found_node + (get_size(found_node)) - 8) = (*(int*)(found_node + (get_size(found_node)) - 8) | 1);
 	    lst_current = found_node;
 	}
 	else
 	{
+	    /*
+	    //printf("Allocating case2 - get_size(found_node) > newsize + 24\n");
 	    if (found_node != lst_start) // If found_node is not the start of block list, pre block's next block allocation bit of header and footer should be changed.
 	    {
 		int prev_size = *(int*)(found_node - 8) & -8;
@@ -1220,6 +1590,26 @@ void* mm_malloc(size_t size)
 	    *(int*)remaining_block_temp = remaining_block_size + (*(int*)(remaining_block_temp + remaining_block_size - 8) & 2);
 	    *(int*)(remaining_block_temp + remaining_block_size - 8) = remaining_block_size + (*(int*)(remaining_block_temp + remaining_block_size - 8) & 2);
 
+	    insert(remaining_block_temp, tree_root);
+	    */
+	    int remaining_block_size = (get_size(found_node)) - newsize;
+	    lst_current = found_node + remaining_block_size;
+	    remaining_block_temp = found_node;
+
+	    *(int*)lst_current = (newsize & -8) + 1;
+	    *(int*)(lst_current + newsize - 8) = (newsize & -8) + 1;
+
+	    *(int*)remaining_block_temp = remaining_block_size + 2;
+	    *(int*)(remaining_block_temp + remaining_block_size - 8) = remaining_block_size + 2;
+	    if ((lst_current + get_size(lst_current)) != lst_end) 
+	    {
+		int next_allocated = (*(int*)(lst_current + (get_size(lst_current))) & 1);
+		if (next_allocated == 1)
+		{
+		    *(int*)lst_current = (*(int*)lst_current) | 2;
+		    *(int*)(lst_current + (get_size(lst_current)) - 8) = (*(int*)(lst_current + (get_size(lst_current)) - 8)) | 2;
+		}
+	    }
 	    insert(remaining_block_temp, tree_root);
 	}
     }
@@ -1239,7 +1629,10 @@ void* mm_malloc(size_t size)
 	lst_end = lst_current + newsize;
     }
   }
-  printf("Allocation - address : %p, size : %d\n", lst_current, newsize);
+  //calculate_heuristic((float)newsize, heuristic_size);
+  //printf("mm_malloc END\n");
+  //list_print(lst_start);
+  //printf("Allocation - address : %p, size : %d, actual size : %d\n", lst_current, newsize, get_size(lst_current));
   void* p = lst_current+8;
   if (p == (void *)-1)
     return NULL;
@@ -1255,9 +1648,11 @@ void* mm_malloc(size_t size)
 
 void mm_free(void* ptr)
 {
+    //printf("mm_free START\n");
+    //list_print(lst_start);
     ptr = ptr - 8;
-    printf("FREE - %d\n", free_counter++);
-    printf("mm_free - ptr : %p, size : %d\n", ptr, get_size(ptr));
+    //printf("FREE - %d\n", free_counter++);
+    //printf("mm_free - ptr : %p, size : %d\n", ptr, get_size(ptr));
 
     if ((*(int*)ptr & 1) != 1)
     {
@@ -1282,7 +1677,7 @@ void mm_free(void* ptr)
     
     if ((current_header == 3) && (prev_header == 3) && (next_header != -1)) // Case 1 : prev - allocated, current - allocated, next - allocated
     {
-	printf("mm_free - Case 1\n");
+	//printf("mm_free - Case 1\n");
 	*(int*)ptr = (get_size(ptr)) + 2;
 	*(int*)(ptr + (get_size(ptr)) - 8) = (get_size(ptr)) + 2;
 	*(int*)(ptr - prev_size) = prev_size + 1;
@@ -1291,7 +1686,7 @@ void mm_free(void* ptr)
     }
     else if ((current_header == 3) && (prev_header == 2) && (next_header != -1)) // Case 2 : prev - free, current - allocated, next - allocated
     {
-	printf("mm_free - Case 2\n");
+	//printf("mm_free - Case 2\n");
 	lst_start_free = ptr - prev_size;
 	delete(lst_start_free);
 	*(int*)lst_start_free = current_size + prev_size + 2;
@@ -1300,7 +1695,7 @@ void mm_free(void* ptr)
     }
     else if ((current_header == 1) && (prev_header == 3) && (next_header != -1)) // Case 3: prev - allocated, current - allocated, next - free
     {
-	printf("mm_free - Case 3\n");
+	//printf("mm_free - Case 3\n");
 	lst_free_next_temp = ptr + current_size;
 	delete(lst_free_next_temp);
 	*(int*)ptr = current_size + next_size + next_header;
@@ -1311,7 +1706,7 @@ void mm_free(void* ptr)
     }
     else if ((current_header == 1) && (prev_header == 2) && (next_header != -1)) // Case 4 : prev - free, current - allocated, next - free
     {
-	printf("mm_free - Case 4\n");
+	//printf("mm_free - Case 4\n");
 	lst_free_prev_temp = ptr - prev_size;
 	lst_free_next_temp = ptr + current_size;
 	delete(lst_free_prev_temp);
@@ -1323,7 +1718,7 @@ void mm_free(void* ptr)
     }
     else if ((current_header == 1) && (prev_header == 3) && (next_header == -1)) // Case 5 : prev - allocated, current - allocated, next - X
     {
-	printf("mm_free - Case 5\n");
+	//printf("mm_free - Case 5\n");
 	lst_free_prev_temp = ptr - prev_size;
 	*(int*)ptr = current_size + 0;
 	*(int*)(ptr + current_size - 8) = current_size + 0;
@@ -1333,7 +1728,7 @@ void mm_free(void* ptr)
     }
     else if ((current_header == 1) && (prev_header == 2) && (next_header == -1)) // Case 6 : prev - free, current - allocated, next - X
     {
-	printf("mm_free - Case 6\n");
+	//printf("mm_free - Case 6\n");
 	lst_free_prev_temp = ptr - prev_size;
 	delete(lst_free_prev_temp);
 	lst_start_free = lst_free_prev_temp;
@@ -1343,14 +1738,14 @@ void mm_free(void* ptr)
     }
     else if ((current_header == 3) && (prev_header == -1) && (next_header != -1)) // Case 7 : prev - X, current - allocated, next - allocated
     {
-	printf("mm_free - Case 7\n");
+	//printf("mm_free - Case 7\n");
 	*(int*)ptr = current_size + 2;
 	*(int*)(ptr + current_size - 8) = current_size + 2;
 	insert(ptr, tree_root);
     }
     else if ((current_header == 1) && (prev_header == -1) && (next_header != -1)) // Case 8 : prev - X, current - allocated, next - free
     {
-	printf("mm_free - Case 8\n");
+	//printf("mm_free - Case 8\n");
 	lst_free_next_temp = ptr + current_size;
 	delete(lst_free_next_temp);
 	lst_start_free = ptr;
@@ -1360,13 +1755,20 @@ void mm_free(void* ptr)
     }
     else // Case 9 : prev - X, current - allocated, next - X
     {
-	printf("mm_free - Case 9\n");
+	//printf("mm_free - Case 9\n");
 	*(int*)ptr = current_size + 0;
 	*(int*)(ptr + current_size - 8) = current_size + 0;
 	insert(ptr, tree_root);
     }
+    //tree_checker();
+    black_num = 0;
+	//printf("mm_free END\n");
     //inorder_traverse(tree_root);
-    
+	//printf("\ntree_checker ==============================\n");
+	tree_checker();
+	//printf("tree_checker ==============================\n\n");
+    //printf("mm_free END\n");
+    //list_print(lst_start);
     ptr = ptr + 8;
     /* DON't MODIFY THIS STAGE AND LEAVE IT AS IT WAS */
     if (gl_ranges)
@@ -1388,7 +1790,7 @@ void* mm_realloc(void *ptr, size_t t)
  */
 void mm_exit(void)
 {
-  printf("mm_exit entered - lst_start : %p, lst_end : %p\n", lst_start, lst_end);
+  //printf("mm_exit entered - lst_start : %p, lst_end : %p\n", lst_start, lst_end);
   for(lst_tracker = lst_start; lst_tracker < lst_end; lst_tracker = lst_tracker + (*(int*)lst_tracker & -8))
   {
     //printf("mm_exit for loop - lst_tracker : %p, lst_start : %p, lst_end : %p, current block allocated? : %d\n", lst_tracker, lst_start, lst_end, ((*(int*)lst_tracker & 1)));
@@ -1399,6 +1801,7 @@ void mm_exit(void)
       mm_free((void*)((char*)lst_tracker + 8));
     }
   }
+  //inorder_traverse(tree_root);
   lst_start_free = NULL;
   lst_end_free = NULL;
   lst_tracker_free = NULL;
@@ -1411,6 +1814,8 @@ void mm_exit(void)
   lst_tracker = NULL;
   lst_current = NULL;
   tree_root = NULL;
+  heuristic_size = 0.0;
+  alloc_num = 0;
 }
 
 
