@@ -179,6 +179,32 @@ void list_print (void* lst)
  *	|			       |
  *	+------------------------------+
  *
+ * Allocated block form : HEADER(4)-BLANK(4)-...PAYLOAD...-FOOTER(4)-BLANK(4) : Minimum size : 16
+ *
+ *	+------------------------------+
+ *	|			       |
+ *	|      HEADER - Size : 4       |
+ *	|			       |
+ *	+------------------------------+
+ *	|			       |
+ *	|       BLANK - Size : 4       |
+ *	|			       |
+ *	+------------------------------+
+ *	|			       |
+ *	|			       |
+ *	|	    PAYLOAD	       |
+ *	|			       |
+ *	|			       |
+ *	+------------------------------+
+ *	|			       |
+ *	|      FOOTER - Size : 4       |
+ *	|			       |
+ *	+------------------------------+
+ *	|			       |
+ *	|    	BLANK - Size : 4       |
+ *	|			       |
+ *	+------------------------------+
+ *
  */
 
 /*
@@ -204,7 +230,6 @@ void delete_case6(void* ptr);
 void left_rotation(void* ptr);
 void right_rotation(void* ptr);
 
-void replace_node(void* ptr1, void* ptr2);
 void copy_node(void* ptr1, void* ptr2);
 
 int get_size(void* ptr);
@@ -733,77 +758,6 @@ void copy_node(void* ptr1, void* ptr2)
 		*(int*)(ptr2 + 8) = (int)(copy_node_ptr1_parent_temp);
 		*(int*)(ptr2 + (get_size(ptr2)) - 4) = (int)(copy_node_ptr1_right_child_temp);
 
-	}
-}
-
-void replace_node(void* ptr1, void* ptr2) // ptr2 goes into ptr1's place and ptr1 is removed from tree.
-{
-	if (ptr1 == NULL || ptr2 == NULL)
-	{
-		return;
-	}
-	else
-	{
-		int pred = 0;
-		int succ = 0;
-		replace_node_ptr1_parent_temp = parent(ptr1);
-		replace_node_ptr1_left_child_temp = left_child(ptr1);
-		replace_node_ptr1_right_child_temp = right_child(ptr1);
-		replace_node_ptr2_parent_temp = parent(ptr2);
-		if (left_child(ptr2) != NULL) // Inorder predecessor.
-		{
-			replace_node_ptr2_child_temp = left_child(ptr2);
-			pred = 1;
-		}
-		else // Inorder successor.
-		{
-			replace_node_ptr2_child_temp = right_child(ptr2);
-			succ = 1;
-		}
-		*(int*)(ptr1 + 4) = 0;
-		*(int*)(ptr1 + 8) = 0;
-		*(int*)(ptr1 + (get_size(ptr1)) - 4) = 0;
-		*(int*)(ptr2 + 4) = (int)(replace_node_ptr1_left_child_temp);
-		*(int*)(ptr2 + 8) = (int)(replace_node_ptr1_parent_temp);
-		*(int*)(ptr2 + (get_size(ptr2)) - 4) = (int)(replace_node_ptr1_right_child_temp);
-		if (replace_node_ptr2_parent_temp == ptr1) // Successor or predecessor's parent is ptr1. 
-		{
-			if (pred)
-			{
-				*(int*)(ptr2 + 4) = (int)(replace_node_ptr2_child_temp);
-				if (replace_node_ptr2_child_temp != NULL)
-				{
-				    *(int*)(replace_node_ptr2_child_temp + 8) = (int)ptr2;
-				}
-			}
-			else if (succ)
-			{
-				*(int*)(ptr2 + (get_size(ptr2)) - 4) = (int)(replace_node_ptr2_child_temp);
-				if (replace_node_ptr2_child_temp != NULL)
-				{
-				    *(int*)(replace_node_ptr2_child_temp + 8) = (int)ptr2;
-				}
-			}
-		}
-		else // Successor or predecossor's parent is not ptr1. Ordinary case.
-		{
-			if (pred)
-			{
-				*(int*)(replace_node_ptr2_parent_temp + (get_size(replace_node_ptr2_parent_temp)) - 4) = (int)(replace_node_ptr2_child_temp);
-				if (replace_node_ptr2_child_temp != NULL)
-				{
-				    *(int*)(replace_node_ptr2_child_temp + 8) = (int)replace_node_ptr2_parent_temp;
-				}
-			}
-			else if (succ)
-			{
-				*(int*)(replace_node_ptr2_parent_temp + 4) = (int)(replace_node_ptr2_child_temp);
-				if (replace_node_ptr2_child_temp != NULL)
-				{
-				    *(int*)(replace_node_ptr2_child_temp + 8) = (int)replace_node_ptr2_parent_temp;
-				}
-			}
-		}
 	}
 }
 
@@ -1556,7 +1510,6 @@ void tree_check(void* ptr, int black)
 static float alpha = 1.0;
 static float heuristic_size = 0.0;
 static float heuristic_size_prev = 0.0;
-static float heuristic_weight_prev = 0.0;
 static float heuristic_weight = 0.75;
 static float heuristic_weight_alpha = 0.75;
 static float new_weight = 0.25;
@@ -1601,7 +1554,7 @@ void calculate_heuristic (float size, float heur)
 {
     alloc_num = alloc_num + 1;
     float heuristic_size_prev_temp = heuristic_size;
-    heuristic_size = ((heuristic_size * heuristic_weight) + (heuristic_size_prev * heuristic_weight_prev) + (size * new_weight));
+    heuristic_size = ((heuristic_size * heuristic_weight) + (size * new_weight));
     alpha = (alpha * heuristic_weight_alpha) + ((heuristic_size / heuristic_size_prev_temp) * new_weight_alpha);
     float abs_diff_alpha = 1.0 - alpha;
     if (abs_diff_alpha < 0.0)
@@ -1620,11 +1573,11 @@ void calculate_heuristic (float size, float heur)
 	}
 	else
 	{
-    	if (abs_diff_alpha < heuristic_pvalue && alloc_num >= alloc_num_min)
-   	 	{
+		if (abs_diff_alpha < heuristic_pvalue && alloc_num >= alloc_num_min)
+		{
 			heuristic_allocation((int)size);
 			alloc_num = 0;
-    	}
+		}
 	}
 	heuristic_size_prev = heuristic_size_prev_temp;
 }
@@ -1705,7 +1658,8 @@ void* mm_malloc(size_t size)
 {
   int newsize = ALIGN(size + 2*SIZE_T_SIZE); // 8 for header and 8 for footer of memory block in heap.
 
-  if (lst_start == lst_end) // Allocating case 1 : There is no block allocated.
+  // Allocating case 1 : There is no block allocated.
+  if (lst_start == lst_end)
   {
     lst_current = mem_sbrk(newsize);
     if (lst_current == (void *)-1)
@@ -1716,15 +1670,18 @@ void* mm_malloc(size_t size)
     (*(int*)(lst_current + (newsize - 8))) = (newsize & -8) + 1;
     lst_end = lst_current + newsize;
     lst_start = lst_current;
-    heuristic_size = newsize - 24;
+    heuristic_size = newsize;
     calculate_heuristic((float)newsize, heuristic_size);
   }
-  else // Allocating case 2 : Allocated blocks exists. Free or allocated. Find 'free and allocatable size' block. If not exists, allocate new block at the end of list.
+  // Allocating case 2 : Allocated blocks exist. Free or allocated. Find 'free and allocatable size' block. If not exists, allocate new block at the end of list.
+  else 
   {
     found_node = find_block(newsize, tree_root);
+    // Case 2-1 : Block is found.
     if (found_node != NULL)
     {
-	if (get_size(found_node) <= newsize + 24) // Case of best block.
+	// Case 2-1-1 : best block.
+	if (get_size(found_node) <= newsize + 24)
 	{
 	    if (found_node != lst_start) // If found_node is not the start of block list, prev block's next block allocation bit of header and footer should be changed.
 	    {
@@ -1736,6 +1693,7 @@ void* mm_malloc(size_t size)
 	    *(int*)(found_node + (get_size(found_node)) - 8) = (*(int*)(found_node + (get_size(found_node)) - 8) | 1);
 	    lst_current = found_node;
 	}
+	// Case 2-1-2 : not best block.
 	else
 	{
 	    int remaining_block_size = (get_size(found_node)) - newsize;
@@ -1759,7 +1717,8 @@ void* mm_malloc(size_t size)
 	    insert(remaining_block_temp, tree_root); // Insert remaining block after allocation into RB tree.
 	}
     }
-    else // Block is not found.
+    // Case 2-2 : Block is not found.
+    else
     {
 	lst_current = mem_sbrk(newsize);
 	if (lst_current == (void*)-1)
@@ -1819,8 +1778,8 @@ void mm_free(void* ptr)
 	next_header = (*(int*)(ptr + (get_size(ptr))) & 3);
 	next_size = (*(int*)(ptr + (get_size(ptr))) & -8);
     }
-    
-    if ((current_header == 3) && (prev_header == 3) && (next_header != -1)) // Case 1 : prev - allocated, current - allocated, next - allocated
+    // Case 1 : prev - allocated, current - allocated, next - allocated
+    if ((current_header == 3) && (prev_header == 3) && (next_header != -1)) 
     {
 	*(int*)ptr = (get_size(ptr)) + 2;
 	*(int*)(ptr + (get_size(ptr)) - 8) = (get_size(ptr)) + 2;
@@ -1828,7 +1787,8 @@ void mm_free(void* ptr)
 	*(int*)(ptr - 8) = prev_size + 1;
 	insert(ptr, tree_root);
     }
-    else if ((current_header == 3) && (prev_header == 2) && (next_header != -1)) // Case 2 : prev - free, current - allocated, next - allocated
+    // Case 2 : prev - free, current - allocated, next - allocated
+    else if ((current_header == 3) && (prev_header == 2) && (next_header != -1)) 
     {
 	lst_start_free = ptr - prev_size;
 	delete(lst_start_free);
@@ -1836,7 +1796,8 @@ void mm_free(void* ptr)
 	*(int*)(lst_start_free + current_size + prev_size - 8) = current_size + prev_size + 2;
 	insert(lst_start_free, tree_root);
     }
-    else if ((current_header == 1) && (prev_header == 3) && (next_header != -1)) // Case 3: prev - allocated, current - allocated, next - free
+    // Case 3: prev - allocated, current - allocated, next - free
+    else if ((current_header == 1) && (prev_header == 3) && (next_header != -1)) 
     {
 	lst_free_next_temp = ptr + current_size;
 	delete(lst_free_next_temp);
@@ -1846,7 +1807,8 @@ void mm_free(void* ptr)
 	*(int*)(ptr - 8) = (*(int*)(ptr - 8) & -8) + 1;
 	insert(ptr, tree_root);
     }
-    else if ((current_header == 1) && (prev_header == 2) && (next_header != -1)) // Case 4 : prev - free, current - allocated, next - free
+    // Case 4 : prev - free, current - allocated, next - free
+    else if ((current_header == 1) && (prev_header == 2) && (next_header != -1)) 
     {
 	lst_free_prev_temp = ptr - prev_size;
 	lst_free_next_temp = ptr + current_size;
@@ -1857,7 +1819,8 @@ void mm_free(void* ptr)
 	*(int*)(lst_start_free + prev_size + current_size + next_size - 8) = prev_size + current_size + next_size + next_header;
 	insert(lst_start_free, tree_root);
     }
-    else if ((current_header == 1) && (prev_header == 3) && (next_header == -1)) // Case 5 : prev - allocated, current - allocated, next - X
+    // Case 5 : prev - allocated, current - allocated, next - X
+    else if ((current_header == 1) && (prev_header == 3) && (next_header == -1)) 
     {
 	lst_free_prev_temp = ptr - prev_size;
 	*(int*)ptr = current_size + 0;
@@ -1866,7 +1829,8 @@ void mm_free(void* ptr)
 	*(int*)(lst_free_prev_temp + prev_size - 8) = (*(int*)(lst_free_prev_temp + prev_size - 8) & -3);
 	insert(ptr, tree_root);
     }
-    else if ((current_header == 1) && (prev_header == 2) && (next_header == -1)) // Case 6 : prev - free, current - allocated, next - X
+    // Case 6 : prev - free, current - allocated, next - X
+    else if ((current_header == 1) && (prev_header == 2) && (next_header == -1)) 
     {
 	lst_free_prev_temp = ptr - prev_size;
 	delete(lst_free_prev_temp);
@@ -1875,13 +1839,15 @@ void mm_free(void* ptr)
 	*(int*)(lst_start_free + prev_size + current_size - 8) = prev_size + current_size + 0;
 	insert(lst_start_free, tree_root);
     }
-    else if ((current_header == 3) && (prev_header == -1) && (next_header != -1)) // Case 7 : prev - X, current - allocated, next - allocated
+    // Case 7 : prev - X, current - allocated, next - allocated
+    else if ((current_header == 3) && (prev_header == -1) && (next_header != -1)) 
     {
 	*(int*)ptr = current_size + 2;
 	*(int*)(ptr + current_size - 8) = current_size + 2;
 	insert(ptr, tree_root);
     }
-    else if ((current_header == 1) && (prev_header == -1) && (next_header != -1)) // Case 8 : prev - X, current - allocated, next - free
+    // Case 8 : prev - X, current - allocated, next - free
+    else if ((current_header == 1) && (prev_header == -1) && (next_header != -1)) 
     {
 	lst_free_next_temp = ptr + current_size;
 	delete(lst_free_next_temp);
@@ -1890,7 +1856,8 @@ void mm_free(void* ptr)
 	*(int*)(lst_start_free + current_size + next_size - 8) = current_size + next_size + next_header;
 	insert(lst_start_free, tree_root);
     }
-    else // Case 9 : prev - X, current - allocated, next - X
+    // Case 9 : prev - X, current - allocated, next - X
+    else 
     {
 	*(int*)ptr = current_size + 0;
 	*(int*)(ptr + current_size - 8) = current_size + 0;
