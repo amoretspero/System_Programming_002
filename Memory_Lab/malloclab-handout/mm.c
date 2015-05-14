@@ -1520,6 +1520,9 @@ static int alloc_num_min = 4;
 static int alloc_num_min_init = 8;
 static int heuristic_init = 1;
 static int size_multiplier = 1;
+static int curr_alloc_size = 0;
+static int prev_alloc_size = 0;
+static int prev_prev_alloc_size = 0;
 void* heuristic_alloc_temp;
 
 /*
@@ -1528,7 +1531,20 @@ void* heuristic_alloc_temp;
 void heuristic_allocation (int alloc_size)
 {
     int num = 1;
-	int size = alloc_size * size_multiplier;
+    prev_prev_alloc_size = prev_alloc_size;
+    prev_alloc_size = curr_alloc_size;
+    curr_alloc_size = alloc_size;
+
+    if (curr_alloc_size == prev_alloc_size)
+    {
+	num = num * 4;
+	if (prev_alloc_size == prev_prev_alloc_size)
+	{
+	    num = num * 2;
+	}
+    }
+
+    int size = alloc_size * size_multiplier;
     while (num > 0)
     {
 		heuristic_alloc_temp = mem_sbrk(size);
@@ -1634,9 +1650,9 @@ int mm_init(range_t **ranges)
   alloc_num = 0;
 
   /* Initially, lst points 16 bytes away from start of heap. lst_start and lst_end points to same address as lst. */
-  lst_current = mem_sbrk(16);
-  (*(int*)lst_current) = 16 + 1;
-  (*(int*)(lst_current + 8)) = 16 + 1;
+  lst_current = mem_heap_lo();
+  //(*(int*)lst_current) = 16 + 1;
+  //(*(int*)(lst_current + 8)) = 16 + 1;
   lst_start = lst_current;
   lst_end = lst_current;
   
