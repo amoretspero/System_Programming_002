@@ -1,13 +1,51 @@
 /*
- * mm-naive.c - The fastest, least memory-efficient malloc package.
+ * mm.c - With Red Black tree implementaion for free blocks and prediction algorithm for utilization improvement.
  *
- * In this naive approach, a block is allocated by simply incrementing
- * the brk pointer.  A block is pure payload. There are no headers or
- * footers.  Blocks are never coalesced or reused. Realloc is
- * implemented directly using mm_malloc and mm_free.
+ * In this approach, free blocks are maintained by RB tree and prediction algorithm is used.
  *
- * NOTE TO STUDENTS: Replace this header comment with your own header
- * comment that gives a high level description of your solution.
+ * ========== Free block management - RED BLACK TREE ==========
+ * RB tree's characteristics make finding best blocks very fast(time complexity of O(log n)).
+ * And, For coalescing of free blocks, RB tree's insert and delete function
+ * makes it not much complex. (Insert and Delete takes O(log n) also.)
+ * Just see previous and next block, if coalescing is needed,
+ * delete block(s) that is going to be coalesced and coalesce and insert the coalesced block.
+ *
+ * Finding best block - find_block(int size, void* tree)
+ * Insertion - insert(void* ptr, void* tree)
+ * Deletion - delete(void* ptr)
+ * Check of Red Black characteristics - tree_checker();
+ * ============================================================
+ *
+ * ========== Prediction Algorithm ==========
+ * If same size of blocks are continuously causes new allocation,
+ * It would increase utilization of memory if we allocate block of that
+ * size in advance.
+ * Let's assume block size of m repeatedly requires to be allocated.
+ * Than prediction algorithm will allocated that block in advance with some interval.
+ * Even if there would be block size of n to be allocated, (which would have some difference with m)
+ * that block can find more fitting block by find_block() or if n > m, newly be allocated.
+ * This will make utilization of memory better if repeatedly allocated block will be freed repeatedly,
+ * which has reasonable probability in reality.
+ *
+ * heuristic_size : size that take every block newly allocated with mem_sbrk() with weight of (heuristic_weight)/1
+ * alpha : ratio of previous heuristic_size and newly calculated heuristic_size multiplied by weight of (new_alpha_weight)/1 
+ * 	   plused by previous alpha with weight of (heuristic_weight_alpha)/1
+ * heuristic_pvalue : limit of abs_diff_alpha which is absolute value of alpha. If abs_diff_alpha < heuristic_pvalue and alloc_num condition meets,
+ *  		      heuristic_allocation is performed.
+ * calculate_heuristic : perform needed calculations to predict next block.
+ * heuristic_allocation : allocate new free block who has size of repeatedly call calculate_heuristic(), and put it into RB tree.
+ * 
+ * Formula for heuristic_size : heuristic_size = (heuristic_size * heuristic_weight) + (size * new_weight)
+ * Formula for alpha : alpha = (alpha * heuristic_weight_alpha) + ((heuristic_size(current value) / heuristic_size(previous value)) * new_weight_alpha)
+ * Condition for allocation in advance : 1) abs_diff_alpha < heuristic_pvalue, 2) alloc_num == alloc_num_min
+ * ==========================================
+ *
+ * ========== Some effect of prediction algorithm ==========
+ * Without prediction algorithm, binary-bal.rep and binary2-bal.rep has very low utilization(53%, 47%).
+ * With prediction algorith, utilization of binary-bal.rep and binary2-bal.rep has been increased significantly(83%, 72%), without hurting other test files.
+ * (Some files except above two files, they have shown little increase of utilization.)
+ * =========================================================
+ * 
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,21 +87,23 @@ static range_t **gl_ranges;
 
 /* Tracks allocated and free blocks. - Implicit list method. */
 
-void* lst_current;
 void* lst_start;
 void* lst_end;
 void* lst_tracker; // Tracker for searching block list from start to end, finding allocatable free block.
-void* lst_current_free;
+void* lst_current;
 void* lst_start_free;
-void* lst_end_free;
-void* lst_tracker_free;
 void* lst_free_next_temp;
 void* lst_free_prev_temp;
+void* lst_current_free;
+void* lst_end_free;
+void* lst_tracker_free;
 void* lst_free_root_temp;
 void* remaining_block_temp;
 void* current_block_end;
+
 int allocation_counter;
 int free_counter;
+
 void free_list_print (void* lst)
 {
 	if (lst == NULL)
@@ -72,10 +112,10 @@ void free_list_print (void* lst)
 	}
 	else
 	{
-		//printf("FREE LIST PRINTER\n");
+		printf("FREE LIST PRINTER\n");
 		while (lst != NULL)
 		{
-			//printf("Address : %p, Size : %d, next free block : %p, prev free block : %p\n", lst, *(int*)lst, (void*)(*(int*)(lst + 8)), (void*)(*(int*)(lst + 12)));
+			printf("Address : %p, Size : %d, next free block : %p, prev free block : %p\n", lst, *(int*)lst, (void*)(*(int*)(lst + 8)), (void*)(*(int*)(lst + 12)));
 			lst = (void*)(*(int*)(lst + 8));
 		}
 	}
@@ -207,14 +247,8 @@ void* tree_root = NULL;
 void insert_bst(void* ptr, void* tree);
 void insert(void* ptr, void* tree)
 {
-    //printf("Insert - tree root : %p, ptr : %p, size : %d\n", tree_root, ptr, get_size(ptr));
-	insert_bst(ptr, tree);
-	//printf("After BST Insert : \n");
-	//inorder_traverse(tree_root);
-    //printf("insert - Inorder traverse done!\n");
+    insert_bst(ptr, tree);
     insert_case1(ptr);
-	//printf("After Insert : \n");
-	//inorder_traverse(tree_root);
 }
 void insert_bst(void* ptr, void* tree)
 {
@@ -1515,13 +1549,15 @@ int mm_init(range_t **ranges)
 {
   /* YOUR IMPLEMENTATION */
 
-  lst_start_free = NULL;
+  /*
   lst_end_free = NULL;
   lst_tracker_free = NULL;
   lst_current_free = NULL;
   lst_free_next_temp = NULL;
   lst_free_prev_temp = NULL;
   lst_free_root_temp = NULL;
+  */
+  lst_start_free = NULL;
   lst_start = NULL;
   lst_end = NULL;
   lst_tracker = NULL;
