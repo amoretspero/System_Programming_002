@@ -85,25 +85,32 @@ static range_t **gl_ranges;
 
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
-/* Tracks allocated and free blocks. - Implicit list method. */
+/* Block and block list indicaters */
 
 void* lst_start;
 void* lst_end;
-void* lst_tracker; // Tracker for searching block list from start to end, finding allocatable free block.
+void* lst_tracker;
 void* lst_current;
+
 void* lst_start_free;
-void* lst_free_next_temp;
-void* lst_free_prev_temp;
 void* lst_current_free;
 void* lst_end_free;
+
+void* lst_free_next_temp;
+void* lst_free_prev_temp;
 void* lst_tracker_free;
+
 void* lst_free_root_temp;
 void* remaining_block_temp;
 void* current_block_end;
 
+/* Counts how many allocation and free has taken place. - Used for debugging. */
 int allocation_counter;
 int free_counter;
 
+/*
+ * Prints list of free blocks.
+ */
 void free_list_print (void* lst)
 {
 	if (lst == NULL)
@@ -120,6 +127,10 @@ void free_list_print (void* lst)
 		}
 	}
 }
+
+/*
+ * Prints list of all blocks.
+ */
 void list_print (void* lst)
 {
     if (lst == NULL)
@@ -135,9 +146,84 @@ void list_print (void* lst)
 	}
     }
 }
-// Red Black Tree Implementation : HEADER(4)-LEFT_CHILD(4)-PARENT(4)-...-FOOTER(4)-RIGHT_CHILD(4) : Minimum size : 24
+
+/*
+ * Red Black Tree Implementation
+ *
+ * Free block form : HEADER(4)-LEFT_CHILD(4)-PARENT(4)-...-FOOTER(4)-RIGHT_CHILD(4) : Minimum size : 24
+ *	+------------------------------+
+ *	|			       |
+ *	|      HEADER - Size : 4       |
+ *	|			       |
+ *	+------------------------------+
+ *	|			       |
+ *	|    LEFT_CHILD - Size : 4     |
+ *	|			       |
+ *	+------------------------------+
+ *	|			       |
+ *	|    	Parent - Size : 4      |
+ *	|			       |
+ *	+------------------------------+
+ *	|			       |
+ *	|			       |
+ *	|	     ......	       |
+ *	|			       |
+ *	|			       |
+ *	+------------------------------+
+ *	|			       |
+ *	|    RIGHT_CHILD - Size : 4    |
+ *	|			       |
+ *	+------------------------------+
+ *	|			       |
+ *	|    RIGHT_CHILD - Size : 4    |
+ *	|			       |
+ *	+------------------------------+
+ *
+ */
+
+/*
+ * Prototypes
+ */
+void insert(void* ptr, void* tree);
+void insert_bst(void* ptr, void* tree);
+void insert_case1(void* ptr);
+void insert_case2(void* ptr);
+void insert_case3(void* ptr);
+void insert_case4(void* ptr);
+void insert_case5(void* ptr);
+
+void delete(void* ptr);
+void delete_one_child(void* ptr);
+void delete_case1(void* ptr);
+void delete_case2(void* ptr);
+void delete_case3(void* ptr);
+void delete_case4(void* ptr);
+void delete_case5(void* ptr);
+void delete_case6(void* ptr);
+
+void left_rotation(void* ptr);
+void right_rotation(void* ptr);
+
+void replace_node(void* ptr1, void* ptr2);
+void copy_node(void* ptr1, void* ptr2);
+
 int get_size(void* ptr);
+
+void tree_checker();
+void tree_check(void* ptr, int black);
 void inorder_traverse(void* ptr);
+
+void calculate_heuristic(float size, float heur);
+void heuristic_allocation(int alloc_size);
+
+/*
+ * Pointer to root of RB tree.
+ */
+void* tree_root;
+
+/*
+ * Get parent block of ptr. If root, return NULL.
+ */
 void* parent (void* ptr)
 {
 	if (ptr != NULL)
@@ -149,6 +235,10 @@ void* parent (void* ptr)
 		return NULL;
 	}
 }
+
+/*
+ * Get left child of ptr. If does not exist, return NULL.
+ */
 void* left_child(void* ptr)
 {
 	if (ptr != NULL)
@@ -160,6 +250,10 @@ void* left_child(void* ptr)
 		return NULL;
 	}
 }
+
+/*
+ * Get right child of ptr. If does not exist, return NULL.
+ */
 void* right_child(void* ptr)
 {
 	if (ptr != NULL)
@@ -171,6 +265,10 @@ void* right_child(void* ptr)
 		return NULL;
 	}
 }
+
+/*
+ * Get grand parent of ptr. If does not exist or ptr is root, return NULL.
+ */
 void* grandparent (void* ptr)
 {
 	if (*(int*)(ptr + 8) != 0)
@@ -182,6 +280,10 @@ void* grandparent (void* ptr)
 		return NULL;
 	}
 }
+
+/*
+ * Get uncle of ptr. If does not exist, return NULL.
+ */
 void* gp_temp_for_uncle;
 void* uncle (void* ptr)
 {
@@ -199,7 +301,11 @@ void* uncle (void* ptr)
 		return (left_child(gp_temp_for_uncle));
 	}
 }
-void color_red (void* ptr) // Color bit is 1 for RED
+
+/*
+ * Set color of ptr to red. (Color : 0 - Black, 1 - Red)
+ */
+void color_red (void* ptr)
 {
 	if (ptr != NULL)
 	{
@@ -207,7 +313,11 @@ void color_red (void* ptr) // Color bit is 1 for RED
 		*(int*)(ptr + (get_size(ptr)) - 8) = (*(int*)(ptr + (get_size(ptr)) - 8)) | 4;
 	}
 }
-void color_black (void* ptr) // Color bit is 0 for BLACK
+
+/* 
+ * Set color of ptr to black. (Color : 0 - Black, 1 - Red)
+ */
+void color_black (void* ptr) 
 {
 	if (ptr != NULL)
 	{
@@ -215,6 +325,10 @@ void color_black (void* ptr) // Color bit is 0 for BLACK
 		*(int*)(ptr + (get_size(ptr)) - 8) = (*(int*)(ptr + (get_size(ptr)) - 8)) & -5;
 	}
 }
+
+/*
+ * Get color of ptr.
+ */
 int get_color(void* ptr)
 {
 	if (ptr != NULL)
@@ -226,6 +340,10 @@ int get_color(void* ptr)
 		return -1;
 	}
 }
+
+/*
+ * Get size of block pointed by ptr.
+ */
 int get_size(void* ptr)
 {
 	if (ptr != NULL)
@@ -237,19 +355,19 @@ int get_size(void* ptr)
 		return 0;
 	}
 }
-void insert_case1 (void* ptr);
-void insert_case2 (void* ptr);
-void insert_case3 (void* ptr);
-void insert_case4 (void* ptr);
-void insert_case5 (void* ptr);
 
-void* tree_root = NULL;
-void insert_bst(void* ptr, void* tree);
+/*
+ * Insert block pointed by ptr to RB tree. (Red Black property does not break.)
+ */
 void insert(void* ptr, void* tree)
 {
     insert_bst(ptr, tree);
     insert_case1(ptr);
 }
+
+/*
+ * Insert block pointed by ptr to RB tree. Just insert as same to BST. (Red Black preperty may break.)
+ */
 void insert_bst(void* ptr, void* tree)
 {
 	if (ptr != NULL)
@@ -299,6 +417,9 @@ void insert_bst(void* ptr, void* tree)
 	}
 }
 
+/*
+ * Insert case1 - root
+ */
 void insert_case1 (void* ptr)
 {
 	if ((parent(ptr)) == NULL)
@@ -310,6 +431,10 @@ void insert_case1 (void* ptr)
 		insert_case2(ptr);
 	}
 }
+
+/*
+ * Insert case2 - non-root, parent color = black
+ */
 void insert_case2 (void* ptr)
 {
 	if (get_color(parent(ptr)) == 0)
@@ -321,6 +446,10 @@ void insert_case2 (void* ptr)
 		insert_case3(ptr);
 	}
 }
+
+/*
+ * Insert case3 - uncle exists with color of red
+ */
 void insert_case3 (void* ptr)
 {
 	if (uncle(ptr) != NULL)
@@ -342,9 +471,17 @@ void insert_case3 (void* ptr)
 		insert_case4(ptr);
 	}
 }
+
+/*
+ * Temporary variables for rotations.
+ */
 void* parent_temp_lr;
 void* parent_temp_rr;
 void* new_root_temp;
+
+/*
+ * Left rotation with pivot = ptr
+ */
 void left_rotation(void* ptr)
 {
 	parent_temp_lr = parent(ptr);
@@ -377,6 +514,10 @@ void left_rotation(void* ptr)
 	*(int*)(new_root_temp + 4) = (int)ptr;
 	*(int*)(new_root_temp + 8) = (int)parent_temp_lr;
 }
+
+/*
+ * Right rotation with pivot = ptr
+ */
 void right_rotation(void* ptr)
 {
 	parent_temp_rr = parent(ptr);
@@ -409,10 +550,18 @@ void right_rotation(void* ptr)
 	*(int*)(new_root_temp + (get_size(new_root_temp)) - 4) = (int)ptr;
 	*(int*)(new_root_temp + 8) = (int)parent_temp_rr;
 }
+
+/*
+ * Temporary variables for insert case 4
+ */
 void* saved_p_ic4;
 void* saved_left_ic4;
 void* saved_right_ic4;
 void* gp_temp_ic4;
+
+/*
+ * Insert case4 - if ptr, parent, grandparent makes zig-zag form, rotate them.
+ */
 void insert_case4 (void* ptr)
 {
 	if ((ptr == (right_child(parent(ptr)))) && ((parent(ptr)) == (left_child(grandparent(ptr)))))
@@ -429,6 +578,10 @@ void insert_case4 (void* ptr)
 	}
 	insert_case5(ptr);
 }
+
+/*
+ * Insert case5 - ptr, parent, grandparent makes zig-zig or zag-zag form, change color and rotate them.
+ */
 void insert_case5 (void* ptr)
 {
 	color_black(parent(ptr));
@@ -443,7 +596,10 @@ void insert_case5 (void* ptr)
 	}
 }
 
-void* sibling (void* ptr) // Finds the sibling and return it. If sibiling does not exists, it will return NULL.
+/*
+ * Gets sibling of ptr. If sibling does not exist, return NULL.
+ */
+void* sibling (void* ptr)
 {
 	if (parent(ptr) != NULL)
 	{
@@ -462,26 +618,29 @@ void* sibling (void* ptr) // Finds the sibling and return it. If sibiling does n
 	}
 }
 
-void delete_one_child(void* ptr);
-void delete_case1(void* ptr);
-void delete_case2(void* ptr);
-void delete_case3(void* ptr);
-void delete_case4(void* ptr);
-void delete_case5(void* ptr);
-void delete_case6(void* ptr);
-void replace_node(void* ptr1, void* ptr2);
+/*
+ * Temporary variables for replace_node()
+ */
 void* replace_node_ptr1_parent_temp;
 void* replace_node_ptr1_left_child_temp;
 void* replace_node_ptr1_right_child_temp;
 void* replace_node_ptr2_child_temp;
 void* replace_node_ptr2_parent_temp;
+
+/*
+ * Temporary variables for copy_node()
+ */
 void* copy_node_ptr1_parent_temp;
 void* copy_node_ptr1_left_child_temp;
 void* copy_node_ptr1_right_child_temp;
 void* copy_node_ptr2_parent_temp;
 void* copy_node_ptr2_left_child_temp;
 void* copy_node_ptr2_right_child_temp;
-void copy_node(void* ptr1, void* ptr2) // Just exchange the two nodes.
+
+/*
+ * Exchange position of ptr1 and ptr2. If at least one of ptr1, ptr2 is NULL, it will do nothing.
+ */
+void copy_node(void* ptr1, void* ptr2)
 {
 	if (ptr1 == NULL || ptr2 == NULL)
 	{
@@ -489,6 +648,7 @@ void copy_node(void* ptr1, void* ptr2) // Just exchange the two nodes.
 	}
 	else
 	{
+		// Set the new root.
 		if (ptr1 == tree_root)
 		{
 			tree_root = ptr2;
@@ -497,12 +657,15 @@ void copy_node(void* ptr1, void* ptr2) // Just exchange the two nodes.
 		{
 			tree_root = ptr1;
 		}
+
+		// Set temporary copy_node variables.
 		copy_node_ptr1_parent_temp = parent(ptr1);
 		copy_node_ptr1_left_child_temp = left_child(ptr1);
 		copy_node_ptr1_right_child_temp = right_child(ptr1);
 		copy_node_ptr2_parent_temp = parent(ptr2);
 		copy_node_ptr2_left_child_temp = left_child(ptr2);
 		copy_node_ptr2_right_child_temp = right_child(ptr2);
+
 		// Exception 1 - ptr1's right child is ptr2.
 		if (ptr2 == (right_child(ptr1)))
 		{
@@ -544,6 +707,7 @@ void copy_node(void* ptr1, void* ptr2) // Just exchange the two nodes.
 			{
 				*(int*)(copy_node_ptr2_parent_temp + (get_size(copy_node_ptr2_parent_temp)) - 4) = (int)ptr1;
 			}
+		// Set new parent nodes of child nodes of ptr1 or ptr2.
 		if (copy_node_ptr1_left_child_temp != NULL)
 		{
 			*(int*)(copy_node_ptr1_left_child_temp + 8) = (int)ptr2;
@@ -560,7 +724,8 @@ void copy_node(void* ptr1, void* ptr2) // Just exchange the two nodes.
 		{
 			*(int*)(copy_node_ptr2_right_child_temp + 8) = (int)ptr1;
 		}
-
+		
+		// Set ptr1, ptr2's location in tree by updating parent, children nodes.
 		*(int*)(ptr1 + 4) = (int)copy_node_ptr2_left_child_temp;
 		*(int*)(ptr1 + 8) = (int)copy_node_ptr2_parent_temp;
 		*(int*)(ptr1 + (get_size(ptr1)) - 4) = (int)copy_node_ptr2_right_child_temp;
@@ -641,18 +806,29 @@ void replace_node(void* ptr1, void* ptr2) // ptr2 goes into ptr1's place and ptr
 		}
 	}
 }
+
+/*
+ * Temporary variables for delete_one_child()
+ */
 void* delete_one_child_temp;
 void* delete_one_child_parent_temp;
 void* delete_one_child_parent_temp_freeing;
+
+/*
+ * Delete node ptr when ptr has zero or only one children.
+ */
 void delete_one_child(void* ptr)
 {
 	// Assumption : ptr should not have two children.
-	if (ptr == NULL) // Invalid case.
+	
+	// Invalid case.
+	if (ptr == NULL)
 	{
 		return;
 	}
 	else
 	{
+		// Get only children of ptr. If ptr has no children, delete_one_child_temp will be NULL.
 		if (left_child(ptr) != NULL)
 		{
 			delete_one_child_temp = left_child(ptr);
@@ -661,7 +837,7 @@ void delete_one_child(void* ptr)
 		{
 			delete_one_child_temp = right_child(ptr);
 		}
-		
+		// Get color of child.
 		int color_child = -1;
 		if (delete_one_child_temp != NULL)
 		{
@@ -671,6 +847,7 @@ void delete_one_child(void* ptr)
 		{
 			color_child = 0;
 		}
+		// Color of ptr is red. it should have only black leaf children.
 		if (get_color(ptr) == 1)
 		{
 			delete_one_child_parent_temp = parent(ptr);
@@ -691,6 +868,7 @@ void delete_one_child(void* ptr)
 			*(int*)(ptr + 8) = 0;
 			*(int*)(ptr + (get_size(ptr)) - 4) = 0;
 		}
+		// Color of ptr is black and non-leaf child exists.
 		else if ((get_color(ptr) == 0) && (color_child == 1))
 		{
 			color_black(delete_one_child_temp);
@@ -709,6 +887,7 @@ void delete_one_child(void* ptr)
 			*(int*)(ptr + (get_size(ptr)) - 4) = 0;
 			
 		}
+		// Color of ptr is black ad non-leaf child does not exist.
 		else
 		{
 			delete_case1(ptr);
@@ -734,7 +913,15 @@ void delete_one_child(void* ptr)
 		}
 	}
 }
+
+/*
+ * Temporary variables for find_inorder_pred.
+ */
 void* find_inorder_pred_res;
+
+/*
+ * Finds inorder predecessor of ptr.
+ */
 void* find_inorder_pred(void* ptr)
 {
 	if (ptr == NULL) // Invalid case
@@ -758,7 +945,15 @@ void* find_inorder_pred(void* ptr)
 		}
 	}
 }
+
+/*
+ * Temporary variables for find_inorder_succ.
+ */
 void* find_inorder_succ_res;
+
+/*
+ * Finds inorder successor of ptr.
+ */
 void* find_inorder_succ(void* ptr)
 {
 	if (ptr == NULL) // Invalid case
@@ -782,8 +977,16 @@ void* find_inorder_succ(void* ptr)
 		}
 	}
 }
+
+/*
+ * Temporary variables for delete.
+ */
 void* delete_inorder_pred_temp;
 void* delete_inorder_succ_temp;
+
+/*
+ * Deletes the node ptr by removing it from RB tree, if needed, perform red black property restoration, setting ptr's parent, left child, right child to NULL.
+ */
 void delete(void* ptr)
 {
 	if (ptr == NULL) // Invalid case.
@@ -868,6 +1071,9 @@ void delete(void* ptr)
 	}
 }
 
+/*
+ * Delete case1 - if ptr is root, delete_one_child will do the job.
+ */
 void delete_case1(void* ptr) // If ptr is root, done.
 {
 	if (parent(ptr) != NULL)
@@ -875,7 +1081,15 @@ void delete_case1(void* ptr) // If ptr is root, done.
 		delete_case2(ptr);
 	}
 }
+
+/*
+ * Temporary variables for delete_case2
+ */
 void* delete_case2_sibling;
+
+/*
+ * Delete case2 - if color of sibling is red, rotate properly. Must go to case 3.
+ */
 void delete_case2(void* ptr)
 {
 	delete_case2_sibling = sibling(ptr);
@@ -903,7 +1117,15 @@ void delete_case2(void* ptr)
 	}
 	delete_case3(ptr);
 }
+
+/*
+ * Temporary variables for delete_case3
+ */
 void* delete_case3_sibling;
+
+/*
+ * Delete case3 - If parent is red and sibling exists with its children(leaf, non-leaf) are black, color red that sibling and go to case1. if not, go to case4.
+ */
 void delete_case3(void* ptr)
 {
 	delete_case3_sibling = sibling(ptr);
@@ -916,6 +1138,7 @@ void delete_case3(void* ptr)
 	{
 		color_sibling = get_color(delete_case3_sibling);
 	}
+
 	if ((get_color(parent(ptr)) == 0) && (color_sibling == 0)) // First two conditions.
 	{
 		if (delete_case3_sibling == NULL) // Color of sibling is black, but it is NULL leaf of parent.
@@ -953,7 +1176,15 @@ void delete_case3(void* ptr)
 		delete_case4(ptr);
 	}
 }
+
+/*
+ * Temporary variables for delete_case4.
+ */
 void* delete_case4_sibling;
+
+/*
+ * Delete case4 - If sibling exists with color black, non-leaf, and color of parent is red, and sibling has black children(leaf, non-leaf), color sibling red, parent black then end. if not, go to case5.
+ */
 void delete_case4(void* ptr)
 {
 	delete_case4_sibling = sibling(ptr);
@@ -1003,7 +1234,17 @@ void delete_case4(void* ptr)
 		delete_case5(ptr);
 	}
 }
+
+/*
+ * Temporary variables for delete_case5
+ */
 void* delete_case5_sibling;
+
+/*
+ * Delete case5 - If ptr is left child of parent, check if sibling is black, its left child is red, right child is black, then color sibling red, left child of sibling black, then rotate.
+ * If ptr is right child of parent, check if sibling is black, its left child is black, right child is red, then color sibling red, right child of sibling black, then rotate.
+ * Must go to case 6.
+ */
 void delete_case5(void* ptr)
 {
 	delete_case5_sibling = sibling(ptr);
@@ -1056,7 +1297,16 @@ void delete_case5(void* ptr)
 	}
 	delete_case6(ptr);
 }
+
+/*
+ * Temporary variables for delete_case6
+ */
 void* delete_case6_sibling;
+
+/*
+ * Delete case6 - Set color of sibling to color of parent, then color parent as black. If ptr is left child of parent, color black the right child of sibling and rotate.
+ * If ptr is right child of parent, color black the left child of sibling and rotate.
+ */
 void delete_case6(void* ptr)
 {
 	// Need to verify that sibling always exists and its left or right child(accordance with appropriate case) exists.
@@ -1082,9 +1332,18 @@ void delete_case6(void* ptr)
 		right_rotation(parent(ptr));
 	}
 }
+
+/*
+ * Temporary variables for find_block
+ */
 void* return_block;		
 void* tree_root_temp;
-void* find_block(int size, void* tree) // Find the best block(block size is same or greater than given size, and it should be same of smaller than size+24. If no smaller block than size is size+24, return smallest size block and split it in mm_malloc.
+
+/*
+ * find_block - Find the best block(block size is same or greater than given size, and it should be same of smaller than size+24. 
+ * If no smaller block than size is size+24, return smallest size block and split it in mm_malloc.
+ */
+void* find_block(int size, void* tree)
 {
     if (tree == NULL) // Tree does not exist.
     {
@@ -1131,6 +1390,9 @@ void* find_block(int size, void* tree) // Find the best block(block size is same
 }
 void* found_node;
 
+/*
+ * inorder_traverse - Traverse the given tree inorder. Prints the node in order of traversed.
+ */
 void inorder_traverse(void* tree)
 {
     if (tree == NULL)
@@ -1158,10 +1420,18 @@ void inorder_traverse(void* tree)
 	}
     }
 }
+
+/*
+ * Temporary variables for tree_checker, tree_check.
+ */
 static int black_num = 0;
 void* tree_check_temp;
 void* tree_check_root_temp;
-void tree_check(void* ptr, int black);
+
+/*
+ * tree_checker - Find the left most black_num(the number of black nodes that traversal passes till it reaches null leaf node. 
+ * After that, calls tree_check to verify whether given RB tree satisfies red black property.
+ */
 void tree_checker()
 {
     tree_check_root_temp = tree_root;
@@ -1179,6 +1449,10 @@ void tree_checker()
     tree_check(tree_root, 0);
     black_num = 0;
 }
+
+/*
+ * tree_check - With black_num set by tree_checker, verify given RB tree. If red black property is violated, prints message, tree_root, tree itself by inorder_traverse()
+ */
 void tree_check(void* ptr, int black)
 {
     if (tree_root == ptr && get_color(ptr) != 0)
@@ -1276,6 +1550,9 @@ void tree_check(void* ptr, int black)
     return;
 }
 
+/*
+ * Temporary variables for heuristic_allocation, calculate_heuristic.
+ */
 static float alpha = 1.0;
 static float heuristic_size = 0.0;
 static float heuristic_size_prev = 0.0;
@@ -1291,6 +1568,10 @@ static int alloc_num_min_init = 8;
 static int heuristic_init = 1;
 static int size_multiplier = 1;
 void* heuristic_alloc_temp;
+
+/*
+ * heuristic_allocation - When called, allocate free block size of alloc_size and insert that into RB tree.
+ */
 void heuristic_allocation (int alloc_size)
 {
     int num = 1;
@@ -1312,6 +1593,10 @@ void heuristic_allocation (int alloc_size)
     }
     heuristic_alloc_temp = NULL;
 }
+
+/*
+ * calculate_heuristic - When called, update prediction values and if conditions are met, call heuristic_allocation.
+ */
 void calculate_heuristic (float size, float heur)
 {
     alloc_num = alloc_num + 1;
@@ -1383,6 +1668,8 @@ int mm_init(range_t **ranges)
   lst_free_prev_temp = NULL;
   lst_free_root_temp = NULL;
   */
+  
+  // Initialize some values needed.
   lst_start_free = NULL;
   lst_start = NULL;
   lst_end = NULL;
@@ -1393,7 +1680,7 @@ int mm_init(range_t **ranges)
   heuristic_size = 0.0;
   alloc_num = 0;
 
-  /* Initially, lst points 8 bytes away from start of heap. lst_start and lst_end points to same address as lst. */
+  /* Initially, lst points 16 bytes away from start of heap. lst_start and lst_end points to same address as lst. */
   lst_current = mem_sbrk(16);
   (*(int*)lst_current) = 16 + 1;
   (*(int*)(lst_current + 8)) = 16 + 1;
@@ -1416,7 +1703,8 @@ int mm_init(range_t **ranges)
  */
 void* mm_malloc(size_t size)
 {
-  int newsize = ALIGN(size + 2*SIZE_T_SIZE); // 8 for header and footer of memory block in heap.
+  int newsize = ALIGN(size + 2*SIZE_T_SIZE); // 8 for header and 8 for footer of memory block in heap.
+
   if (lst_start == lst_end) // Allocating case 1 : There is no block allocated.
   {
     lst_current = mem_sbrk(newsize);
@@ -1459,7 +1747,7 @@ void* mm_malloc(size_t size)
 
 	    *(int*)remaining_block_temp = remaining_block_size + 2;
 	    *(int*)(remaining_block_temp + remaining_block_size - 8) = remaining_block_size + 2;
-	    if ((lst_current + get_size(lst_current)) != lst_end) 
+	    if ((lst_current + get_size(lst_current)) != lst_end) // If found_node is not the end of block list, set newly allocated block's allocation bit for next block accordingly.
 	    {
 		int next_allocated = (*(int*)(lst_current + (get_size(lst_current))) & 1);
 		if (next_allocated == 1)
@@ -1468,7 +1756,7 @@ void* mm_malloc(size_t size)
 		    *(int*)(lst_current + (get_size(lst_current)) - 8) = (*(int*)(lst_current + (get_size(lst_current)) - 8)) | 2;
 		}
 	    }
-	    insert(remaining_block_temp, tree_root);
+	    insert(remaining_block_temp, tree_root); // Insert remaining block after allocation into RB tree.
 	}
     }
     else // Block is not found.
@@ -1485,6 +1773,8 @@ void* mm_malloc(size_t size)
 	*(int*)(lst_current - prev_size) = (*(int*)(lst_current - prev_size)) | 2;
 
 	lst_end = lst_current + newsize;
+
+	// In this case, this size of block can't have free block in RB tree, calculate prediction values to increase utilization of memory.
 	calculate_heuristic((float)newsize, heuristic_size);
     }
   }
@@ -1503,12 +1793,16 @@ void* mm_malloc(size_t size)
 
 void mm_free(void* ptr)
 {
+    /* YOUR IMPLEMENTATION */
+
     ptr = ptr - 8;
 
+    // If ptr is not allocated, do nothing to prevent double free.
     if ((*(int*)ptr & 1) != 1)
     {
 	return;
     }
+
     int current_header = (*(int*)ptr) & 3;
     int current_size = (get_size(ptr));
     int prev_header = -1;
@@ -1625,6 +1919,7 @@ void* mm_realloc(void *ptr, size_t t)
  */
 void mm_exit(void)
 {
+  // Look all the blocks and if not freed, free that block.
   for(lst_tracker = lst_start; lst_tracker < lst_end; lst_tracker = lst_tracker + (*(int*)lst_tracker & -8))
   {
     if ((*(int*)lst_tracker & 1) == 1)
@@ -1632,6 +1927,8 @@ void mm_exit(void)
       mm_free((void*)((char*)lst_tracker + 8));
     }
   }
+
+  // Reset some values needed.
   lst_start_free = NULL;
   lst_end_free = NULL;
   lst_tracker_free = NULL;
