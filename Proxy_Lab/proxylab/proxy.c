@@ -28,25 +28,159 @@ void Rio_writen_w(int fd, void *usrbuf, size_t n);
 
 void* thread(void* vargp);
 
+sem_t mutex_oc;
+sem_t mutex_log;
+
 char* get_host(char* str)
 {
+	//printf("DEBUG --- get_host : str - %s\n", str);
 	char* host = strtok(str, " ");
 	return host;
 }
 
 char* get_port(char* str)
 {
+	//printf("DEBUG --- get_port : str - %s\n", str);
 	char* port = strtok(str, " ");
-	port = strtok(port, " ");
+	//printf("get_port : port - %s\n", port);
+	if (port == NULL) 
+	{ 
+		//printf("DEBUG --- port NULL!\n"); 
+	}
+	if (port != NULL)
+	{
+		port = strtok(NULL, " ");
+	}
 	return port;
 }
 
 char* get_message(char* str)
 {
+	//printf("DEBUG --- get_message : str - %s\n", str);
 	char* msg = strtok(str, " ");
-	msg = strtok(msg, " ");
-	msg = strtok(msg, " ");
+	if (msg != NULL)
+	{
+		msg = strtok(NULL, " ");
+		if (msg != NULL)
+		{
+			msg = strtok(NULL, "");
+		}
+	}
 	return msg;
+}
+
+char* ctos(char c)
+{
+	char* res = (char*)malloc(sizeof(char) * 2);
+	res[0] = c;
+	res[1] = '\0';
+	//printf("ctos - res : %s\n", res);
+	return res;
+}
+
+int host_checker (char* buf)
+{
+	//printf("DEBUG --- buf : %s\n", buf);
+	if (buf == NULL || strcmp(buf, "\n") == 0)
+	{
+		return -1;
+	}
+	else
+	{
+		int cnt = 0;
+		int len = strlen(buf);
+		char res[128];
+		strcpy(res, "");
+		int dot_cnt = 0;
+		for (cnt = 0; cnt < len && cnt < 15; cnt++)
+		{
+			//printf("res : %s, buf[cnt] : %s\n", res, ctos(buf[cnt]));
+			if (buf[cnt] != ' ' && buf[cnt] != '\n')
+			{
+				char* tmp = ctos(buf[cnt]);
+				strcat(res, tmp);
+				//printf("after strcat\n");
+			}
+			else
+			{
+				break;
+			}
+
+			if (buf[cnt] == '.')
+			{
+				dot_cnt++;
+			}
+		}
+
+		//printf("DEBUG --- res - host_checker : %s\n", res);
+
+		if (strcmp(res, "localhost") == 0)
+		{
+			//printf("DEBUG --- res is localhost!\n");
+			return 1;
+		}
+		else
+		{
+			//printf("DEBUG --- res is not localhost!\n");
+			if (dot_cnt == 3)
+			{
+				return 1;
+			}
+			else
+			{
+				return -1;
+			}
+		}
+	}
+}
+
+int port_checker (char* buf)
+{
+	//printf("DEBUG --- buf(port_checker) : %s\n", buf);
+	if (buf == NULL || strcmp(buf, "\n") == 0)
+	{
+		return -1;
+	}
+	else
+	{
+		int cnt = 0;
+		int space_cnt = 0;
+		char res[128];
+		strcpy(res, "");
+		int len = strlen(buf);
+		for(cnt = 0; cnt < len && cnt < 21; cnt++)
+		{
+			//printf("DEBUG --- cnt : %d, res : %s\n", cnt, res);
+			if (space_cnt == 1)
+			{
+				if (buf[cnt] == '0' || buf[cnt] == '1' || buf[cnt] == '2' || buf[cnt] == '3' || buf[cnt] == '4' || buf[cnt] == '5' || buf[cnt] == '6' || buf[cnt] == '7' || buf[cnt] == '8' || buf[cnt] == '9')
+				{
+					char* temp = ctos(buf[cnt]);
+					strcat(res, temp);
+				}
+				else
+				{
+					break;
+				}
+			}
+			if (buf[cnt] == ' ')
+			{
+				space_cnt++;
+			}
+		}
+
+		//printf("DEBUG --- res - port_checker : %s\n", res);
+
+		if (res != NULL || strcmp(res, "") != 0)
+		{
+			return 1;
+		}
+		else
+		{
+			return -1;
+		}
+	}
+
 }
 
 /*
@@ -59,6 +193,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "Usage: %s <port number>\n", argv[0]);
         exit(0);
     }
+		Sem_init(&mutex_oc, 0, 1);
+		Sem_init(&mutex_log, 0, 1);
 
 		int clientfd, serverfd;
 		int port_proxy;
@@ -94,7 +230,7 @@ int main(int argc, char **argv)
 			client_port = ntohs(clientaddr.sin_port);
 			//printf("Proxy Server connected to %s (%s), port %d\n", hp->h_name, haddrp, client_port);
 			
-			printf("DEBUG --- before Rio_readn_w\n");
+			//printf("DEBUG --- before Rio_readn_w\n");
 			Rio_readn_w(*connfdp, buf, MAXLINE);
 			printf("Proxy received from client : %s\n", buf);
 
@@ -113,42 +249,84 @@ int main(int argc, char **argv)
 			// Retrun to client. */
 			int* connfd = (int*)malloc(sizeof(int));
 			*connfd = Accept(listenfd, (SA*)&clientaddr, &clientlen);
+			//printf("DEBUG --- Proxy server - accepted!\n");
 			Pthread_create(&tid, NULL, thread, connfd);
 
 		}
 
 
 
-    exit(0);
+    //exit(0);
 }
 
 void* thread(void* vargp)
 {
+	rio_t rio_client_to_proxy;
+	//printf("DEBUG --- Proxy server - entered thread!\n");
 	Pthread_detach(pthread_self());
 	
 	int connfd = *((int*)vargp);
+	Rio_readinitb(&rio_client_to_proxy, connfd);
 
 	Free(vargp);
 
 	char buf[MAXLINE];
-	Rio_readn_w(connfd, buf, MAXLINE);
-
-	char* host; int port_server; char* msg; 
-	rio_t rio;
-	host = get_host(buf);
-	port_server = atoi(get_port(buf));
-	msg = get_message(buf);
-	char* msg_received = (char*)malloc(sizeof(char) * strlen(msg));
-
-	int proxy_fd = Open_clientfd(host, port_server);
-	Rio_readinitb(&rio, proxy_fd);
+	//printf("DEBUG --- Proxy server - detached thread and got connfd!\n");
+	//Rio_readn_w(connfd, buf, MAXLINE);
+	Rio_readlineb(&rio_client_to_proxy, buf, MAXLINE);
+	//printf("DEBUG --- Proxy server - buf : \"%s\"\n", buf);
+	while (buf != NULL)
+	{
+		//printf("DEBUG --- Proxy server - read message!\n");
 	
-	Rio_writen_w(proxy_fd, msg, strlen(buf));
-	Rio_readlineb_w(&rio, msg_received, MAXLINE);
-
-	close(proxy_fd);
-
-	Rio_writen_w(connfd, msg_received, strlen(msg_received));
+		if (strcmp(buf, "\n") == 0)
+		{
+			Rio_writen_w(connfd, "usage: <host> <port> <message>\n", strlen("usage: <host> <port> <message>\n"));
+		}
+		else if (host_checker(buf) < 0)
+		{
+			Rio_writen_w(connfd, "usage: <host> <port> <message>\n", strlen("usage: <host> <port> <message>\n"));
+		}
+		else if (port_checker(buf) < 0)
+		{
+			Rio_writen_w(connfd, "usage: <host> <port> <message>\n", strlen("usage: <host> <port> <message>\n"));
+		}
+		else
+		{
+	
+			char* host; int port_server; char* msg; 
+			rio_t rio;
+			
+			char* buf_for_host = (char*)malloc(sizeof(char)*MAXLINE); strcpy(buf_for_host, buf);
+			char* buf_for_port_server = (char*)malloc(sizeof(char)*MAXLINE); strcpy(buf_for_port_server, buf);
+			char* buf_for_msg = (char*)malloc(sizeof(char)*MAXLINE); strcpy(buf_for_msg, buf);
+			host = get_host(buf_for_host); 
+			port_server = atoi(get_port(buf_for_port_server));
+			msg = get_message(buf_for_msg);
+			char* msg_received = (char*)malloc(sizeof(char) * strlen(msg));
+			//printf("DEBUG --- Proxy server - host : \"%s\"\n", host);
+			//printf("DEBUG --- Proxy server - port_server : \"%d\"\n", port_server);
+			//printf("DEBUG --- Proxy server - msg : \"%s\"\n", msg);
+			/*if (host == NULL || port_server == 0 || msg == NULL || (host_checker(host) < 0) || (port_checker(port_server) < 0))
+			{
+				Rio_writen_w(connfd, "usage: <host> <port> <message>\n", strlen("usage: <host> <port> <message>\n"));
+			}*/
+			//else
+			//{
+				int proxy_fd = Open_clientfd(host, port_server);
+				Rio_readinitb(&rio, proxy_fd);
+				
+				Rio_writen_w(proxy_fd, msg, strlen(buf));
+				Rio_readlineb_w(&rio, msg_received, MAXLINE);
+			
+				//Close(proxy_fd);
+			
+				Rio_writen_w(connfd, msg_received, strlen(msg_received));
+			//}
+		}
+	
+		Rio_readlineb(&rio_client_to_proxy, buf, MAXLINE);
+	}
 
 	Close(connfd);
 
