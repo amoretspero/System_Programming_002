@@ -28,8 +28,19 @@ void Rio_writen_w(int fd, void *usrbuf, size_t n);
 
 void* thread(void* vargp);
 
+typedef struct
+{
+	unsigned short port;
+	struct in_addr addr;
+	int fd;
+}log_info;
+
 sem_t mutex_oc;
 sem_t mutex_log;
+sem_t mutex_th;
+
+char* days[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+char* months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
 char* get_host(char* str)
 {
@@ -188,6 +199,7 @@ int port_checker (char* buf)
  */
 int main(int argc, char **argv)
 {
+		signal(SIGPIPE, SIG_IGN);
     /* Check arguments */
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <port number>\n", argv[0]);
@@ -195,13 +207,14 @@ int main(int argc, char **argv)
     }
 		Sem_init(&mutex_oc, 0, 1);
 		Sem_init(&mutex_log, 0, 1);
+		Sem_init(&mutex_th, 0, 1);
 
-		int clientfd, serverfd;
+		//int clientfd, serverfd;
 		int port_proxy;
-		int port_server;
-		char* host;
-		char buf[MAXLINE];
-		rio_t rio;
+		//int port_server;
+		//char* host;
+		//char buf[MAXLINE];
+		//rio_t rio;
 
 		port_proxy = atoi(argv[1]);
 
@@ -209,11 +222,11 @@ int main(int argc, char **argv)
 		int clientlen = sizeof(clientaddr);
 		int listenfd = Open_listenfd(port_proxy);
 
-		int proxy_fd;
+		//int proxy_fd;
 
 		pthread_t tid;
 
-		while(1)
+		while(errno != EPIPE)
 		{
 			/*int* connfdp = Malloc(sizeof(int));
 			struct hostent* hp;
@@ -250,13 +263,17 @@ int main(int argc, char **argv)
 			int* connfd = (int*)malloc(sizeof(int));
 			*connfd = Accept(listenfd, (SA*)&clientaddr, &clientlen);
 			//printf("DEBUG --- Proxy server - accepted!\n");
-			Pthread_create(&tid, NULL, thread, connfd);
+			log_info* log = (log_info*)malloc(sizeof(log_info));
+			log->port = clientaddr.sin_port;
+			log->addr = clientaddr.sin_addr;
+			log->fd = *connfd;
+			Pthread_create(&tid, NULL, thread, log);
 
 		}
 
 
 
-    //exit(0);
+    exit(0);
 }
 
 void* thread(void* vargp)
@@ -264,19 +281,34 @@ void* thread(void* vargp)
 	rio_t rio_client_to_proxy;
 	//printf("DEBUG --- Proxy server - entered thread!\n");
 	Pthread_detach(pthread_self());
-	
-	int connfd = *((int*)vargp);
+
+	//P(&mutex_th);
+
+	log_info log = *((log_info*)vargp);
+	int connfd = log.fd;
+	//char* log_port = (char*)Malloc(sizeof(char)*16);
+	char log_port[16];
+	sprintf(log_port, "%d", log.port);
+	char* log_addr = inet_ntoa(log.addr);
+	//printf("DEBUG --- Receiving vargp finished!\n");
+
 	Rio_readinitb(&rio_client_to_proxy, connfd);
 
 	Free(vargp);
 
 	char buf[MAXLINE];
+	int read_byte = -1;
+	read_byte = Rio_readlineb(&rio_client_to_proxy, buf, MAXLINE);
 	//printf("DEBUG --- Proxy server - detached thread and got connfd!\n");
 	//Rio_readn_w(connfd, buf, MAXLINE);
-	Rio_readlineb(&rio_client_to_proxy, buf, MAXLINE);
-	//printf("DEBUG --- Proxy server - buf : \"%s\"\n", buf);
-	while (buf != NULL)
+	//Rio_readlineb(&rio_client_to_proxy, buf, MAXLINE);
+	//printf("DEBUG --- Proxy server - buf : \"%s\"(%d bytes)\n", buf, read_byte);
+	while (errno != EPIPE && (read_byte > 0))
 	{
+		//Rio_readlineb(&rio_client_to_proxy, buf, MAXLINE);
+		//printf("DEBUG --- Proxy server - buf : \"%s\"\n", buf);
+
+		//printf("DEBUG --- errno == EPIPE : %d\n", (errno == EPIPE));
 		//printf("DEBUG --- Proxy server - read message!\n");
 	
 		if (strcmp(buf, "\n") == 0)
@@ -293,17 +325,25 @@ void* thread(void* vargp)
 		}
 		else
 		{
+			//P(&mutex_oc);
 	
 			char* host; int port_server; char* msg; 
 			rio_t rio;
 			
-			char* buf_for_host = (char*)malloc(sizeof(char)*MAXLINE); strcpy(buf_for_host, buf);
-			char* buf_for_port_server = (char*)malloc(sizeof(char)*MAXLINE); strcpy(buf_for_port_server, buf);
-			char* buf_for_msg = (char*)malloc(sizeof(char)*MAXLINE); strcpy(buf_for_msg, buf);
+			//char* buf_for_host = (char*)Malloc(sizeof(char)*MAXLINE); 
+			char buf_for_host[MAXLINE];
+			strcpy(buf_for_host, buf);
+			//char* buf_for_port_server = (char*)Malloc(sizeof(char)*MAXLINE); 
+			char buf_for_port_server[MAXLINE];
+			strcpy(buf_for_port_server, buf);
+			//char* buf_for_msg = (char*)Malloc(sizeof(char)*MAXLINE); 
+			char buf_for_msg[MAXLINE];
+			strcpy(buf_for_msg, buf);
 			host = get_host(buf_for_host); 
 			port_server = atoi(get_port(buf_for_port_server));
 			msg = get_message(buf_for_msg);
-			char* msg_received = (char*)malloc(sizeof(char) * strlen(msg));
+			//char* msg_received = (char*)Malloc(sizeof(char) * strlen(msg));
+			char msg_received[strlen(msg)];
 			//printf("DEBUG --- Proxy server - host : \"%s\"\n", host);
 			//printf("DEBUG --- Proxy server - port_server : \"%d\"\n", port_server);
 			//printf("DEBUG --- Proxy server - msg : \"%s\"\n", msg);
@@ -313,23 +353,60 @@ void* thread(void* vargp)
 			}*/
 			//else
 			//{
-				int proxy_fd = Open_clientfd(host, port_server);
+				P(&mutex_log);
+				int proxy_fd = open_clientfd_ts(host, port_server, &mutex_oc);
 				Rio_readinitb(&rio, proxy_fd);
 				
 				Rio_writen_w(proxy_fd, msg, strlen(buf));
 				Rio_readlineb_w(&rio, msg_received, MAXLINE);
-			
-				//Close(proxy_fd);
-			
+				//printf("DEBUG --- Got message from server!\n");			
+				//P(&mutex_log);
+				char received_len[16];// = (char*)Malloc(sizeof(char)*16);
+				sprintf(received_len, "%d", (int)strlen(msg_received));
+				//printf("DEBUG --- Generated date!\n");
+				FILE *log_file;
+				log_file = fopen(PROXY_LOG, "a");
+				time_t current_time = time(NULL);
+				struct tm tm = *localtime(&current_time);
+				char time_str[MAXLINE];
+				//char* time_str = (char*)Malloc(sizeof(char)*MAXLINE);
+				//printf("DEBUG --- Getting time done!\n");
+				//setlocale(LC_TIME, "ko_KR.utf8");
+				strftime(time_str, (size_t)128, "%a %d %b %Y %H:%M:%S %Z", &tm);
+				strftime(time_str, (size_t)128, "%A %c", &tm);
+				strcat(time_str, ": ");
+				strcat(time_str, log_addr);
+				//printf("DEBUG --- log_addr added!\n");
+				strcat(time_str, " ");
+				strcat(time_str, log_port);
+				//printf("DEBUG --- log_port added!\n");
+				strcat(time_str, " ");
+				strcat(time_str, received_len);
+				//printf("DEBUG --- received_len added!\n");
+				strcat(time_str, " ");
+				strcat(time_str, msg_received);
+				//printf("DEBUG --- msg_received added!\n");
+				//strcat(time_str, "\n");
+				//strftime(time_str, (size_t)128, "%A %c", &tm);
+				fputs(time_str, log_file);
+				fclose(log_file);
+				//V(&mutex_log);
+
+
 				Rio_writen_w(connfd, msg_received, strlen(msg_received));
 			//}
+
+			//V(&mutex_oc);
+				close(proxy_fd);
+				V(&mutex_log);
 		}
-	
-		Rio_readlineb(&rio_client_to_proxy, buf, MAXLINE);
+		
+		read_byte = Rio_readlineb(&rio_client_to_proxy, buf, MAXLINE);
 	}
 
 	Close(connfd);
-
+	//V(&mutex_th);
+	Pthread_exit(NULL);
 	return NULL;
 }
 
@@ -344,8 +421,8 @@ int open_clientfd_ts(char* hostname, int port, sem_t* mutexp)
 	struct hostent* hp;
 	struct hostent hbuf;
 	struct sockaddr_in serveraddr;
-	char* buf = (char*)malloc(sizeof(char) * len);
-
+	P(mutexp);
+	char* buf = (char*)Malloc(sizeof(char) * len);
 	if ((clientfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
 		return -1;
@@ -375,7 +452,7 @@ int open_clientfd_ts(char* hostname, int port, sem_t* mutexp)
 	{
 		return -1;
 	}
-
+	V(mutexp);
 	return clientfd;
 }
 
