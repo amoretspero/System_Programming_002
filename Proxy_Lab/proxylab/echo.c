@@ -20,6 +20,7 @@ void echo(int connfd, char *prefix)
     Rio_readinitb(&rio, connfd);
     while((n = Rio_readlineb(&rio, buf, MAXLINE)) != 0) {
 	bytecnt += n;
+	//printf("buf : %d %d %d %d %d\n", (int)buf[0], (int)buf[1], (int)buf[2], (int)buf[3], (int)buf[4]);
 	printf("%sreceived %d bytes (%d total)\n", prefix, (int) n, bytecnt);
 	upper_case(buf);
 	Rio_writen(connfd, buf, n);

@@ -45,6 +45,7 @@ char* months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep
 char* get_host(char* str)
 {
 	//printf("DEBUG --- get_host : str - %s\n", str);
+	//char* buf;
 	char* host = strtok(str, " ");
 	return host;
 }
@@ -52,6 +53,7 @@ char* get_host(char* str)
 char* get_port(char* str)
 {
 	//printf("DEBUG --- get_port : str - %s\n", str);
+	//char* buf;
 	char* port = strtok(str, " ");
 	//printf("get_port : port - %s\n", port);
 	if (port == NULL) 
@@ -68,6 +70,7 @@ char* get_port(char* str)
 char* get_message(char* str)
 {
 	//printf("DEBUG --- get_message : str - %s\n", str);
+	//char* buf;
 	char* msg = strtok(str, " ");
 	if (msg != NULL)
 	{
@@ -343,7 +346,7 @@ void* thread(void* vargp)
 			port_server = atoi(get_port(buf_for_port_server));
 			msg = get_message(buf_for_msg);
 			//char* msg_received = (char*)Malloc(sizeof(char) * strlen(msg));
-			char msg_received[strlen(msg)];
+			char msg_received[MAXLINE];
 			//printf("DEBUG --- Proxy server - host : \"%s\"\n", host);
 			//printf("DEBUG --- Proxy server - port_server : \"%d\"\n", port_server);
 			//printf("DEBUG --- Proxy server - msg : \"%s\"\n", msg);
@@ -357,8 +360,9 @@ void* thread(void* vargp)
 				int proxy_fd = open_clientfd_ts(host, port_server, &mutex_oc);
 				Rio_readinitb(&rio, proxy_fd);
 				
-				Rio_writen_w(proxy_fd, msg, strlen(buf));
+				Rio_writen_w(proxy_fd, msg, strlen(msg));
 				Rio_readlineb_w(&rio, msg_received, MAXLINE);
+				Close(proxy_fd);
 				//printf("DEBUG --- Got message from server!\n");			
 				//P(&mutex_log);
 				char received_len[16];// = (char*)Malloc(sizeof(char)*16);
@@ -392,12 +396,11 @@ void* thread(void* vargp)
 				fclose(log_file);
 				//V(&mutex_log);
 
-
 				Rio_writen_w(connfd, msg_received, strlen(msg_received));
 			//}
 
 			//V(&mutex_oc);
-				close(proxy_fd);
+				//close(proxy_fd);
 				V(&mutex_log);
 		}
 		
@@ -406,7 +409,7 @@ void* thread(void* vargp)
 
 	Close(connfd);
 	//V(&mutex_th);
-	Pthread_exit(NULL);
+	//Pthread_exit(NULL);
 	return NULL;
 }
 
